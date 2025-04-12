@@ -14,37 +14,6 @@ This is the source code for my personal portfolio website. The website showcases
 
 ---
 
-## Project Structure
-
-The project is structured as follows:
-lib/
-├── core/
-│   ├── constants/
-│   │   ├── colors.dart
-│   │   ├── text_styles.dart
-│   │   └── dimensions.dart
-│   └── theme/
-│       └── app_theme.dart
-├── features/
-│   ├── home/home.dart
-│   ├── projects/project.dart
-│   ├── about_skills/about_skills.dart
-│   ├── experience/experience.dart
-│   └── blog/blog.dart
-├── widgets/
-│   └── navbar.dart       
-├── routes/
-│   └── router_config.dart
-|   └── routes.dart
-└── assets
-├──     data/
-│       ├── experience.json
-│       ├── about.json
-│       ├── skills.json
-
-
----
-
 ## Technologies Used
 
 - **Flutter**: A UI toolkit for building beautiful, natively compiled applications for mobile, web, and desktop from a single codebase.
