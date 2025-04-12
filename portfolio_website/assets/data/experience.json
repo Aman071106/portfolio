@@ -1,0 +1,39 @@
+[
+    {
+      "company": "FrostHack (AI Agent Hackathon)",
+      "position": "AI Agent Developer",
+      "location": "IIT Mandi, India",
+      "duration": "March 2025",
+      "description": [
+        "Built a fully functional Real time Finance Tacking AI agent in under 48 hours using LangChain, Fetch AI.",
+        "Integrated the agent with external APIs and memory to perform multi-step tasks autonomously.",
+        "Collaborated with a team to deploy and demo the solution at the hackathon."
+      ],
+      "technologies": ["LangChain", "Python", "Fetch AI", "Streamlit","NextJS","Typescript"]
+    },
+    {
+      "company": "Vertex - Institute App for IIT Mandi",
+      "position": "Flutter Developer",
+      "location": "IIT Mandi, India",
+      "duration": "Dec 2025 - Present",
+      "description": [
+        "Developing an all-in-one institute app for students and visitors at IIT Mandi.",
+        "Implemented features like campus navigation, virtual tours, and Firebase integration.",
+        "Built scalable Flutter architecture with clean code separation and modular widgets."
+      ],
+      "technologies": ["Flutter", "MongoDb", "Dart"]
+    },
+    {
+      "company": "KrackHack by GDG IIT Mandi",
+      "position": "Blockchain Developer",
+      "location": "IIT Mandi, India",
+      "duration": "Feb 2025",
+      "description": [
+        "Created a blockchain-based event ticketing system using Move language and Aptos blockchain.",
+        "Built a React frontend and implemented Web3 wallet connect for NFT-based ticketing.",
+        "Included features like resale marketplace, anti-bot protection, and royalty enforcement."
+      ],
+      "technologies": ["Move", "React", "Aptos", "Web3.js"]
+    }
+  ]
+  

@@ -1,0 +1,129 @@
+{
+  "skills": [
+    {
+      "category": "Programming Languages",
+      "items": [
+        {
+          "name": "C++",
+          "logo": "https://cdn-icons-png.flaticon.com/512/6132/6132222.png"
+        },
+        {
+          "name": "Python",
+          "logo": "https://cdn-icons-png.flaticon.com/512/5968/5968350.png"
+        },
+        {
+          "name": "JavaScript",
+          "logo": "https://cdn-icons-png.flaticon.com/512/5968/5968292.png"
+        },
+        {
+          "name": "Kotlin",
+          "logo": "https://cdn-icons-png.flaticon.com/512/919/919852.png"
+        },
+        {
+          "name": "Dart",
+          "logo": "https://cdn-icons-png.flaticon.com/512/5968/5968705.png"
+        },
+        {
+          "name": "TypeScript",
+          "logo": "https://cdn-icons-png.flaticon.com/512/5968/5968381.png"
+        }
+      ]
+    },
+    {
+      "category": "Web Development",
+      "items": [
+        {
+          "name": "ReactJS",
+          "logo": "https://cdn-icons-png.flaticon.com/512/1126/1126012.png"
+        },
+        {
+          "name": "Flutter Web",
+          "logo": "https://cdn-icons-png.flaticon.com/512/888/888859.png"
+        },
+        {
+          "name": "NextJS",
+          "logo": "https://cdn-icons-png.flaticon.com/512/5968/5968672.png"
+        }
+      ]
+    },
+    {
+      "category": "Mobile App Development",
+      "items": [
+        {
+          "name": "Flutter",
+          "logo": "https://cdn-icons-png.flaticon.com/512/888/888859.png"
+        },
+        {
+          "name": "Android (Kotlin)",
+          "logo": "https://cdn-icons-png.flaticon.com/512/174/174836.png"
+        }
+      ]
+    },
+    {
+      "category": "Tools & Platforms",
+      "items": [
+        {
+          "name": "Firebase",
+          "logo": "https://cdn-icons-png.flaticon.com/512/5968/5968945.png"
+        },
+        {
+          "name": "Git",
+          "logo": "https://cdn-icons-png.flaticon.com/512/2111/2111288.png"
+        },
+        {
+          "name": "GitHub",
+          "logo": "https://cdn-icons-png.flaticon.com/512/733/733553.png"
+        },
+        {
+          "name": "VS Code",
+          "logo": "https://cdn-icons-png.flaticon.com/512/906/906324.png"
+        },
+        {
+          "name": "Android Studio",
+          "logo": "https://cdn-icons-png.flaticon.com/512/888/888859.png"
+        },
+        {
+          "name": "Figma",
+          "logo": "https://cdn-icons-png.flaticon.com/512/5968/5968705.png"
+        },
+        {
+          "name": "Anaconda",
+          "logo": "https://cdn-icons-png.flaticon.com/512/5969/5969113.png"
+        },
+        {
+          "name": "Docker",
+          "logo": "https://cdn-icons-png.flaticon.com/512/919/919853.png"
+        },
+        {
+          "name": "Postman",
+          "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT-TB9d5YXwtKhv4NWbpeTBVveYvcxu9gMJng&s"
+        }
+      ]
+    },
+    {
+      "category": "Other",
+      "items": [
+        {
+          "name": "Competitive Programming",
+          "logo": "https://cdn-icons-png.flaticon.com/512/2821/2821637.png"
+        },
+        {
+          "name": "Machine Learning",
+          "logo": "https://cdn-icons-png.flaticon.com/512/2103/2103832.png"
+        },
+        {
+          "name": "REST APIs",
+          "logo": "https://cdn-icons-png.flaticon.com/512/7991/7991055.png"
+        },
+        {
+          "name": "Generative AI",
+          "logo": "https://cdn-icons-png.flaticon.com/512/8637/8637099.png"
+        },
+        {
+          "name": "Deep Learning",
+          "logo": "https://cdn-icons-png.flaticon.com/512/9365/9365476.png"
+        }
+      ]
+    }
+  ]
+}
