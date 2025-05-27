@@ -134,6 +134,7 @@ class _AboutPageState extends State<AboutPage>
   Widget _buildDesktopLayout() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
+
       children: [
         // Page title with animated underline
         Center(
@@ -631,37 +632,77 @@ class _AboutPageState extends State<AboutPage>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
-          margin: const EdgeInsets.only(bottom: AppDimensions.paddingL),
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.paddingM,
-            vertical: AppDimensions.paddingS,
-          ),
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [AppColors.primaryColor, AppColors.accentColor],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.primaryColor.withValues(alpha: .3),
-                spreadRadius: 1,
-                blurRadius: 5,
-                offset: const Offset(0, 2),
+        // Center the heading container on mobile, keep left-aligned on desktop
+        isDesktop
+            ? Container(
+              margin: const EdgeInsets.only(bottom: AppDimensions.paddingL),
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppDimensions.paddingM,
+                vertical: AppDimensions.paddingS,
               ),
-            ],
-          ),
-          child: Text(
-            category['category'],
-            style: TextStyle(
-              fontSize: AppDimensions.fontSizeM,
-              fontWeight: FontWeight.bold,
-              color: AppColors.textLightColor,
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [AppColors.primaryColor, AppColors.accentColor],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(
+                  AppDimensions.borderRadiusM,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primaryColor.withValues(alpha: .3),
+                    spreadRadius: 1,
+                    blurRadius: 5,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Text(
+                category['category'],
+                style: TextStyle(
+                  fontSize: AppDimensions.fontSizeM,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textLightColor,
+                ),
+              ),
+            )
+            : Center(
+              // Center on mobile
+              child: Container(
+                margin: const EdgeInsets.only(bottom: AppDimensions.paddingL),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppDimensions.paddingM,
+                  vertical: AppDimensions.paddingS,
+                ),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [AppColors.primaryColor, AppColors.accentColor],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(
+                    AppDimensions.borderRadiusM,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.primaryColor.withValues(alpha: .3),
+                      spreadRadius: 1,
+                      blurRadius: 5,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Text(
+                  category['category'],
+                  style: TextStyle(
+                    fontSize: AppDimensions.fontSizeM,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textLightColor,
+                  ),
+                ),
+              ),
             ),
-          ),
-        ),
         isDesktop
             ? Wrap(
               spacing: AppDimensions.paddingL,
@@ -670,15 +711,20 @@ class _AboutPageState extends State<AboutPage>
                   items.map<Widget>((item) => _buildSkillItem(item)).toList(),
             )
             : Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
+              crossAxisAlignment:
+                  CrossAxisAlignment.center, // This centers the column
               children:
                   items
                       .map<Widget>(
-                        (item) => Padding(
-                          padding: const EdgeInsets.only(
+                        (item) => Container(
+                          width: double.infinity, // Take full width
+                          margin: const EdgeInsets.only(
                             bottom: AppDimensions.paddingL,
                           ),
-                          child: _buildSkillItem(item),
+                          child: Center(
+                            // Center the skill item
+                            child: _buildSkillItem(item),
+                          ),
                         ),
                       )
                       .toList(),
