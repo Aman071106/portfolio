@@ -76,7 +76,7 @@ class _HomePageState extends State<HomePage>
       // If home.json doesn't exist, create default data
       setState(() {
         homeData = {
-          "name": "Aman Gupta",
+          "name": "HAHAHA",
           "tagline": "Flutter Developer & AI Enthusiast",
           "intro":
               "Building beautiful cross-platform applications with Flutter and exploring the frontiers of AI.",
@@ -518,8 +518,8 @@ class _HomePageState extends State<HomePage>
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
-                        Colors.blue.shade800.withValues(alpha:0.6),
-                        Colors.blue.shade200.withValues(alpha:0.6),
+                        Colors.blue.shade800.withValues(alpha: 0.6),
+                        Colors.blue.shade200.withValues(alpha: 0.6),
                       ],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
@@ -564,7 +564,7 @@ class _HomePageState extends State<HomePage>
                     gradient: RadialGradient(
                       colors: [
                         Colors.transparent,
-                        Colors.blue.withValues(alpha:0.1),
+                        Colors.blue.withValues(alpha: 0.1),
                       ],
                       center: Alignment.center,
                       radius: 0.8,
@@ -746,11 +746,11 @@ class _HomePageState extends State<HomePage>
                 style: ElevatedButton.styleFrom(
                   foregroundColor: AppColors.textLightColor,
                   backgroundColor: AppColors.accentColor,
-                  disabledForegroundColor: AppColors.textLightColor.withValues(alpha:
-                    0.6,
+                  disabledForegroundColor: AppColors.textLightColor.withValues(
+                    alpha: 0.6,
                   ),
-                  disabledBackgroundColor: AppColors.accentColor.withValues(alpha:
-                    0.6,
+                  disabledBackgroundColor: AppColors.accentColor.withValues(
+                    alpha: 0.6,
                   ),
                   elevation: 5,
                   shadowColor: AppColors.accentColor.withValues(alpha: .5),
