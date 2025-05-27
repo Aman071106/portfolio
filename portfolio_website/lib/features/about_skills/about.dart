@@ -670,6 +670,7 @@ class _AboutPageState extends State<AboutPage>
                   items.map<Widget>((item) => _buildSkillItem(item)).toList(),
             )
             : Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children:
                   items
                       .map<Widget>(
@@ -745,7 +746,3 @@ class _AboutPageState extends State<AboutPage>
     );
   }
 }
-
-
-// -hire button
-// -download cv button

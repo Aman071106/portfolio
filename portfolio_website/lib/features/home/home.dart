@@ -76,8 +76,8 @@ class _HomePageState extends State<HomePage>
       // If home.json doesn't exist, create default data
       setState(() {
         homeData = {
-          "name": "Gupta Aman",
-          "tagline": "Flutter Developer & AI Enthusiast",
+          "name": "Aman Gupta",
+          "tagline": "AI/ML and Flutter App developer",
           "intro":
               "Building beautiful cross-platform applications with Flutter and exploring the frontiers of AI.",
           "resumeUrl": "#",
