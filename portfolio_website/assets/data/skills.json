@@ -26,6 +26,10 @@
         {
           "name": "TypeScript",
           "logo": "https://cdn-icons-png.flaticon.com/512/5968/5968381.png"
+        },
+        {
+          "name": "SQL",
+          "logo": "https://cdn-icons-png.flaticon.com/512/2772/2772128.png"
         }
       ]
     },
@@ -33,16 +37,20 @@
       "category": "Web Development",
       "items": [
         {
-          "name": "ReactJS",
-          "logo": "https://cdn-icons-png.flaticon.com/512/1126/1126012.png"
-        },
-        {
           "name": "Flutter Web",
           "logo": "https://cdn-icons-png.flaticon.com/512/888/888859.png"
         },
         {
           "name": "NextJS",
-          "logo": "https://cdn-icons-png.flaticon.com/512/5968/5968672.png"
+          "logo": "https://img.icons8.com/?size=100&id=yUdJlcKanVbh&format=png&color=000000"
+        },
+        {
+          "name": "Node.js",
+          "logo": "https://cdn-icons-png.flaticon.com/512/919/919825.png"
+        },
+        {
+          "name": "Express.js",
+          "logo": "https://cdn-icons-png.flaticon.com/512/919/919843.png"
         }
       ]
     },
@@ -56,6 +64,10 @@
         {
           "name": "Android (Kotlin)",
           "logo": "https://cdn-icons-png.flaticon.com/512/174/174836.png"
+        },
+        {
+          "name": "Jetpack Compose",
+          "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRe4D1o5bjc7v1BpogoT8dzmyEcpOxz1fzwbA&s"
         }
       ]
     },
@@ -64,11 +76,11 @@
       "items": [
         {
           "name": "Firebase",
-          "logo": "https://cdn-icons-png.flaticon.com/512/5968/5968945.png"
+          "logo": "https://images.icon-icons.com/691/PNG/512/google_firebase_icon-icons.com_61474.png"
         },
         {
           "name": "Git",
-          "logo": "https://cdn-icons-png.flaticon.com/512/2111/2111288.png"
+          "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Git_icon.svg/1200px-Git_icon.svg.png"
         },
         {
           "name": "GitHub",
@@ -76,19 +88,15 @@
         },
         {
           "name": "VS Code",
-          "logo": "https://cdn-icons-png.flaticon.com/512/906/906324.png"
+          "logo": "https://cdn.iconscout.com/icon/free/png-256/free-vscode-icon-download-in-svg-png-gif-file-formats--logo-social-media-iconography-pack-logos-icons-10918898.png"
         },
         {
           "name": "Android Studio",
-          "logo": "https://cdn-icons-png.flaticon.com/512/888/888859.png"
-        },
-        {
-          "name": "Figma",
-          "logo": "https://cdn-icons-png.flaticon.com/512/5968/5968705.png"
+          "logo": "https://svgrepo.com/show/424906/logo-google-android-studio.svg"
         },
         {
           "name": "Anaconda",
-          "logo": "https://cdn-icons-png.flaticon.com/512/5969/5969113.png"
+          "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTXqvREgueCenWgK3AOYf2Ggyz-jOISn5uJfg&s"
         },
         {
           "name": "Docker",
@@ -97,6 +105,14 @@
         {
           "name": "Postman",
           "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT-TB9d5YXwtKhv4NWbpeTBVveYvcxu9gMJng&s"
+        },
+        {
+          "name": "AWS",
+          "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSf8ZwQVJ4EjnO8oWqjAZGEy-IbyqfLCcmYHg&s"
+        },
+        {
+          "name": "Dagshub",
+          "logo": "https://media.licdn.com/dms/image/v2/D4D0BAQEi95YymFDeXQ/company-logo_200_200/company-logo_200_200/0/1706796611414/dagshub_logo?e=2147483647&v=beta&t=rWof2O7FpWPATk72R6KWRTo04ImzBJnKv1WBBqPZ2Js"
         }
       ]
     },
@@ -122,6 +138,46 @@
         {
           "name": "Deep Learning",
           "logo": "https://cdn-icons-png.flaticon.com/512/9365/9365476.png"
+        },
+        {
+          "name": "LangChain",
+          "logo": "https://assets.streamlinehq.com/image/private/w_300,h_300,ar_1/f_auto/v1/icons/logos/langchain-ipuhh4qo1jz5ssl4x0g2a.png/langchain-dp1uxj2zn3752pntqnpfu2.png?_a=DATAg1AAZAA0"
+        },
+        {
+          "name": "CrewAI",
+          "logo": "https://images.seeklogo.com/logo-png/61/2/crew-ai-logo-png_seeklogo-619843.png"
+        },
+        {
+          "name": "LangGraph",
+          "logo": "https://registry.npmmirror.com/@lobehub/icons-static-png/latest/files/light/langgraph.png"
+        },
+        {
+          "name": "MLflow",
+          "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRy8RXezmKJEzVNsbt52H8__bwBgXk6mjC7CA&s"
+        },
+        {
+          "name": "Airflow",
+          "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTFzCIuPsPokbP-V0RFFgCRJqcve5gpjJmTtg&s"
+        },
+        {
+          "name": "DVC",
+          "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSdoCjAiT2fbDrfTD0bFjOHYkhAPd3mbz0CvA&s"
+        },
+        {
+          "name": "VectorDB",
+          "logo": "https://cdn-icons-png.flaticon.com/512/4314/4314349.png"
+        },
+        {
+          "name": "Scikit-Learn",
+          "logo": "https://cdn.prod.website-files.com/65264f6bf54e751c3a776db1/66d86935aaeb8c0b9fa1bde7_scikit-learn.png"
+        },
+        {
+          "name": "TensorFlow",
+          "logo": "https://img.icons8.com/?size=512&id=n3QRpDA7KZ7P&format=png"
+        },
+        {
+          "name": "PyTorch",
+          "logo": "https://img.icons8.com/fluent/200/pytorch.png"
         }
       ]
     }

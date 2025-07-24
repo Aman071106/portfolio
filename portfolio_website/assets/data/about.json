@@ -1,9 +1,9 @@
 {
-  "cvUrl":"https://docs.google.com/document/d/1_okL5uuap8kDs_V-hxlW3bH0CeIE7BnS/edit?usp=drive_link&ouid=117189304943942459861&rtpof=true&sd=true",
+  "cvUrl": "https://drive.google.com/file/d/1Rb_vDk5yQM2nA5yDmm4SzjbBTGsRixod/view",
   "name": "Aman Gupta",
   "displayName": "DeadlyHarbor",
-  "title": "Computer Science Enthusiast & Developer",
-  "bio": "I am a passionate computer science student with a keen interest in app development, competitive programming, and building innovative solutions. I enjoy working on projects that blend creativity with technology, especially in Flutter, AI/ML, BlockChain development.",
+  "title": "AI/ML & MLOps Engineer | Flutter Developer | Competitive Programmer",
+  "bio": "I'm an AI/ML engineering student passionate about building scalable systems and intelligent applications. My expertise spans Generative AI, MLOps, and Flutter app development. I thrive on solving real-world problems through hackathons, agentic AI systems, and end-to-end ML pipelines. Enthusiastic about research, open-source, and pushing the boundaries of practical AI.",
   "location": "Rajasthan, India",
   "email": "aman07112006@gmail.com",
   "socials": {
@@ -14,6 +14,18 @@
     "linkedin": {
       "url": "https://www.linkedin.com/in/aman-gupta-730694323/",
       "icon": "https://cdn-icons-png.flaticon.com/512/3536/3536505.png"
+    },
+    "leetcode": {
+      "url": "https://leetcode.com/u/aman_071106/",
+      "icon": "https://cdn.iconscout.com/icon/free/png-256/free-leetcode-3521542-2944960.png"
+    },
+    "codeforces": {
+      "url": "https://codeforces.com/profile/AmanGuptacd",
+      "icon": "https://sta.codeforces.com/s/96988/images/codeforces-logo-with-telegram.png"
+    },
+    "portfolio": {
+      "url": "https://portfolio-web-7ea37.web.app/",
+      "icon": "https://cdn-icons-png.flaticon.com/512/841/841364.png"
     }
   },
   "profileImage": "https://raw.githubusercontent.com/Aman071106/IITApp/main2/ContributorImages/profilePicAman.jpg"
