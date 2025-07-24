@@ -710,9 +710,8 @@ class _AboutPageState extends State<AboutPage>
               children:
                   items.map<Widget>((item) => _buildSkillItem(item)).toList(),
             )
-            : Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.center, // This centers the column
+            : Wrap(
+              
               children:
                   items
                       .map<Widget>(
