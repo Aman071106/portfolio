@@ -1,65 +1,13 @@
-import 'dart:convert';
-import 'dart:developer';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../utils/constants/colors.dart';
 import '../../utils/constants/dimensions.dart';
 import '../../widgets/navabar.dart';
 
-class ExperiencePage extends StatefulWidget {
+import 'bloc/experience_bloc.dart';
+
+class ExperiencePage extends StatelessWidget {
   const ExperiencePage({super.key});
-
-  @override
-  createState() => _ExperiencePageState();
-}
-
-class _ExperiencePageState extends State<ExperiencePage>
-    with SingleTickerProviderStateMixin {
-  List<dynamic>? experienceData;
-  bool isLoading = true;
-  late AnimationController _animationController;
-  late Animation<double> _fadeAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _animationController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1000),
-    );
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(_animationController);
-    _loadData();
-  }
-
-  @override
-  void dispose() {
-    _animationController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _loadData() async {
-    try {
-      // Load experience.json
-      final experienceString = await rootBundle.loadString(
-        'assets/data/experience.json',
-      );
-      final experienceJson = jsonDecode(experienceString);
-
-      setState(() {
-        experienceData = experienceJson;
-        isLoading = false;
-      });
-      _animationController.forward();
-    } catch (e) {
-      log('Error loading experience data: $e');
-      setState(() {
-        isLoading = false;
-      });
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -78,43 +26,51 @@ class _ExperiencePageState extends State<ExperiencePage>
         children: [
           NavBar(currentPath: '/experience'),
           Expanded(
-            child:
-                isLoading
-                    ? const Center(
+            child: BlocProvider(
+              create: (context) => ExperienceBloc()..add(LoadExperience()),
+              child: BlocBuilder<ExperienceBloc, ExperienceState>(
+                builder: (context, state) {
+                  if (state is ExperienceLoading) {
+                    return const Center(
                       child: CircularProgressIndicator(
                         color: AppColors.primaryColor,
                       ),
-                    )
-                    : experienceData == null
-                    ? const Center(
-                      child: Text('Failed to load experience data'),
-                    )
-                    : FadeTransition(
-                      opacity: _fadeAnimation,
-                      child: SingleChildScrollView(
-                        child: Padding(
-                          padding: const EdgeInsets.all(AppDimensions.paddingL),
-                          child: Center(
-                            child: ConstrainedBox(
-                              constraints: BoxConstraints(
-                                maxWidth:
-                                    isDesktop
-                                        ? AppDimensions.maxContentWidthDesktop
-                                        : AppDimensions.maxContentWidthMobile,
-                              ),
-                              child: _buildExperienceContent(isDesktop),
+                    );
+                  } else if (state is ExperienceLoaded) {
+                    final experienceData = state.experienceData;
+                    return SingleChildScrollView(
+                      child: Padding(
+                        padding: const EdgeInsets.all(AppDimensions.paddingL),
+                        child: Center(
+                          child: ConstrainedBox(
+                            constraints: BoxConstraints(
+                              maxWidth:
+                                  isDesktop
+                                      ? AppDimensions.maxContentWidthDesktop
+                                      : AppDimensions.maxContentWidthMobile,
                             ),
+                            child: _buildExperienceContent(experienceData, isDesktop),
                           ),
                         ),
                       ),
-                    ),
+                    );
+                  } else if (state is ExperienceError) {
+                    return Center(
+                      child: Text('Failed to load experience data: ${state.message}'),
+                    );
+                  } else {
+                    return const Center(child: Text('Initial state'));
+                  }
+                },
+              ),
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildExperienceContent(bool isDesktop) {
+  Widget _buildExperienceContent(List<dynamic> experienceData, bool isDesktop) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -123,7 +79,7 @@ class _ExperiencePageState extends State<ExperiencePage>
         const SizedBox(height: AppDimensions.paddingXXL),
 
         // Experience timeline
-        _buildExperienceTimeline(isDesktop),
+        _buildExperienceTimeline(experienceData, isDesktop),
       ],
     );
   }
@@ -152,19 +108,13 @@ class _ExperiencePageState extends State<ExperiencePage>
     );
   }
 
-  Widget _buildExperienceTimeline(bool isDesktop) {
+  Widget _buildExperienceTimeline(List<dynamic> experienceData, bool isDesktop) {
     return ListView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      itemCount: experienceData!.length,
+      itemCount: experienceData.length,
       itemBuilder: (context, index) {
-        final experience = experienceData![index];
-        // Create staggered animation effect
-        final staggeredDelay = Duration(milliseconds: 200 * index);
-        Future.delayed(staggeredDelay, () {
-          if (mounted) setState(() {});
-        });
-
+        final experience = experienceData[index];
         return Padding(
           padding: const EdgeInsets.only(bottom: AppDimensions.paddingXL),
           child: _buildExperienceCard(experience, index, isDesktop),

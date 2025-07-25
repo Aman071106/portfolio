@@ -1,74 +1,15 @@
-import 'dart:convert';
-import 'dart:developer';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../utils/constants/colors.dart';
 import '../../utils/constants/dimensions.dart';
 import '../../utils/constants/strings.dart';
 import '../../widgets/navabar.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-// Enhanced About Page
-class AboutPage extends StatefulWidget {
+import 'bloc/about_bloc.dart';
+
+class AboutPage extends StatelessWidget {
   const AboutPage({super.key});
-
-  @override
-  createState() => _AboutPageState();
-}
-
-class _AboutPageState extends State<AboutPage>
-    with SingleTickerProviderStateMixin {
-  Map<String, dynamic>? aboutData;
-  Map<String, dynamic>? skillsData;
-  bool isLoading = true;
-  late AnimationController _animationController;
-  late Animation<double> _fadeAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _animationController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1000),
-    );
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(_animationController);
-    _loadData();
-  }
-
-  @override
-  void dispose() {
-    _animationController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _loadData() async {
-    try {
-      // Load about.json
-      final aboutString = await rootBundle.loadString('assets/data/about.json');
-      final aboutJson = jsonDecode(aboutString);
-
-      // Load skills.json
-      final skillsString = await rootBundle.loadString(
-        'assets/data/skills.json',
-      );
-      final skillsJson = jsonDecode(skillsString);
-
-      setState(() {
-        aboutData = aboutJson;
-        skillsData = skillsJson;
-        isLoading = false;
-      });
-      _animationController.forward();
-    } catch (e) {
-      log('Error loading data: $e');
-      setState(() {
-        isLoading = false;
-      });
-    }
-  }
 
   Future<void> _launchUrl(String url) async {
     final Uri uri = Uri.parse(url);
@@ -94,17 +35,21 @@ class _AboutPageState extends State<AboutPage>
         children: [
           NavBar(currentPath: '/about'),
           Expanded(
-            child:
-                isLoading
-                    ? const Center(
+            child: BlocProvider(
+              create: (context) => AboutBloc()..add(LoadAboutData()),
+              child: BlocBuilder<AboutBloc, AboutState>(
+                builder: (context, state) {
+                  if (state is AboutLoading) {
+                    return const Center(
                       child: CircularProgressIndicator(
                         color: AppColors.primaryColor,
                       ),
-                    )
-                    : aboutData == null || skillsData == null
-                    ? const Center(child: Text('Failed to load data'))
-                    : FadeTransition(
-                      opacity: _fadeAnimation,
+                    );
+                  } else if (state is AboutLoaded) {
+                    final aboutData = state.aboutData;
+                    final skillsData = state.skillsData;
+                    return FadeTransition(
+                      opacity: const AlwaysStoppedAnimation(1.0), // No longer need animation controller here
                       child: SingleChildScrollView(
                         child: Padding(
                           padding: const EdgeInsets.all(AppDimensions.paddingL),
@@ -118,23 +63,30 @@ class _AboutPageState extends State<AboutPage>
                               ),
                               child:
                                   isDesktop
-                                      ? _buildDesktopLayout()
-                                      : _buildMobileLayout(),
+                                      ? _buildDesktopLayout(aboutData, skillsData, _launchUrl)
+                                      : _buildMobileLayout(aboutData, skillsData, _launchUrl),
                             ),
                           ),
                         ),
                       ),
-                    ),
+                    );
+                  } else if (state is AboutError) {
+                    return Center(child: Text('Failed to load data: ${state.message}'));
+                  } else {
+                    return const Center(child: Text('Initial state'));
+                  }
+                },
+              ),
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildDesktopLayout() {
+  Widget _buildDesktopLayout(Map<String, dynamic> aboutData, Map<String, dynamic> skillsData, Function(String) launchUrl) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-
       children: [
         // Page title with animated underline
         Center(
@@ -166,20 +118,20 @@ class _AboutPageState extends State<AboutPage>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Profile image with animations
-            _buildProfileImage(AppDimensions.profileImageSizeDesktop),
+            _buildProfileImage(aboutData, AppDimensions.profileImageSizeDesktop),
             const SizedBox(width: AppDimensions.paddingXL),
             // Bio information
-            Expanded(child: _buildBioSection()),
+            Expanded(child: _buildBioSection(aboutData, launchUrl)),
           ],
         ),
         const SizedBox(height: AppDimensions.paddingXXL),
         // Skills section with card layout
-        _buildSkillsSection(isDesktop: true),
+        _buildSkillsSection(skillsData, true),
       ],
     );
   }
 
-  Widget _buildMobileLayout() {
+  Widget _buildMobileLayout(Map<String, dynamic> aboutData, Map<String, dynamic> skillsData, Function(String) launchUrl) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -207,18 +159,18 @@ class _AboutPageState extends State<AboutPage>
         ),
         const SizedBox(height: AppDimensions.paddingXL),
         // Profile image centered with animations
-        _buildProfileImage(AppDimensions.profileImageSizeMobile),
+        _buildProfileImage(aboutData, AppDimensions.profileImageSizeMobile),
         const SizedBox(height: AppDimensions.paddingL),
         // Bio information
-        _buildBioSection(),
+        _buildBioSection(aboutData, launchUrl),
         const SizedBox(height: AppDimensions.paddingXL),
         // Skills section with card layout
-        _buildSkillsSection(isDesktop: false),
+        _buildSkillsSection(skillsData, false),
       ],
     );
   }
 
-  Widget _buildProfileImage(double size) {
+  Widget _buildProfileImage(Map<String, dynamic> aboutData, double size) {
     return Container(
       width: size,
       height: size,
@@ -242,7 +194,7 @@ class _AboutPageState extends State<AboutPage>
         padding: const EdgeInsets.all(4.0),
         child: ClipOval(
           child: Image.network(
-            aboutData!['profileImage'],
+            aboutData['profileImage'],
             fit: BoxFit.cover,
             loadingBuilder: (context, child, loadingProgress) {
               if (loadingProgress == null) return child;
@@ -272,12 +224,12 @@ class _AboutPageState extends State<AboutPage>
     );
   }
 
-  Widget _buildBioSection() {
+  Widget _buildBioSection(Map<String, dynamic> aboutData, Function(String) launchUrl) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          aboutData!['name'],
+          aboutData['name'],
           style: TextStyle(
             fontSize: AppDimensions.fontSizeXXL,
             fontWeight: FontWeight.bold,
@@ -287,7 +239,7 @@ class _AboutPageState extends State<AboutPage>
         ),
         const SizedBox(height: AppDimensions.paddingXS),
         Text(
-          aboutData!['displayName'],
+          aboutData['displayName'],
           style: TextStyle(
             fontSize: AppDimensions.fontSizeL,
             fontWeight: FontWeight.w500,
@@ -309,7 +261,7 @@ class _AboutPageState extends State<AboutPage>
             ),
           ),
           child: Text(
-            aboutData!['title'] ?? '',
+            aboutData['title'] ?? '',
             style: TextStyle(
               fontSize: AppDimensions.fontSizeM,
               fontWeight: FontWeight.w500,
@@ -333,7 +285,7 @@ class _AboutPageState extends State<AboutPage>
             ],
           ),
           child: Text(
-            aboutData!['bio'] ?? '',
+            aboutData['bio'] ?? '',
             style: TextStyle(
               fontSize: AppDimensions.fontSizeM,
               color: AppColors.textSecondaryColor,
@@ -343,16 +295,16 @@ class _AboutPageState extends State<AboutPage>
           ),
         ),
         const SizedBox(height: AppDimensions.paddingL),
-        _buildContactInfo(),
+        _buildContactInfo(aboutData),
         const SizedBox(height: AppDimensions.paddingL),
-        _buildSocialLinks(),
+        _buildSocialLinks(aboutData, launchUrl),
         const SizedBox(height: AppDimensions.paddingL),
-        _buildActionButtons(),
+        _buildActionButtons(aboutData, launchUrl),
       ],
     );
   }
 
-  Widget _buildContactInfo() {
+  Widget _buildContactInfo(Map<String, dynamic> aboutData) {
     return Container(
       padding: const EdgeInsets.all(AppDimensions.paddingL),
       decoration: BoxDecoration(
@@ -399,7 +351,7 @@ class _AboutPageState extends State<AboutPage>
               const SizedBox(width: AppDimensions.paddingM),
               Expanded(
                 child: Text(
-                  '${MyAppStrings.locationLabel}: ${aboutData!['location'] ?? ''}',
+                  '${MyAppStrings.locationLabel}: ${aboutData['location'] ?? ''}',
                   style: TextStyle(
                     fontSize: AppDimensions.fontSizeM,
                     color: AppColors.textSecondaryColor,
@@ -429,7 +381,7 @@ class _AboutPageState extends State<AboutPage>
               const SizedBox(width: AppDimensions.paddingM),
               Expanded(
                 child: Text(
-                  '${MyAppStrings.emailLabel}: ${aboutData!['email'] ?? ''}',
+                  '${MyAppStrings.emailLabel}: ${aboutData['email'] ?? ''}',
                   style: TextStyle(
                     fontSize: AppDimensions.fontSizeM,
                     color: AppColors.textSecondaryColor,
@@ -443,7 +395,7 @@ class _AboutPageState extends State<AboutPage>
     );
   }
 
-  Widget _buildSocialLinks() {
+  Widget _buildSocialLinks(Map<String, dynamic> aboutData, Function(String) launchUrl) {
     return Container(
       padding: const EdgeInsets.all(AppDimensions.paddingL),
       decoration: BoxDecoration(
@@ -474,18 +426,20 @@ class _AboutPageState extends State<AboutPage>
             scrollDirection: Axis.horizontal,
             child: Row(
               children: [
-                if (aboutData!['socials']?['github'] != null)
+                if (aboutData['socials']?['github'] != null)
                   _buildSocialButton(
-                    icon: aboutData!['socials']['github']['icon'],
+                    icon: aboutData['socials']['github']['icon'],
                     label: MyAppStrings.githubLabel,
-                    url: aboutData!['socials']['github']['url'],
+                    url: aboutData['socials']['github']['url'],
+                    launchUrl: launchUrl
                   ),
                 const SizedBox(width: AppDimensions.paddingM),
-                if (aboutData!['socials']?['linkedin'] != null)
+                if (aboutData['socials']?['linkedin'] != null)
                   _buildSocialButton(
-                    icon: aboutData!['socials']['linkedin']['icon'],
+                    icon: aboutData['socials']['linkedin']['icon'],
                     label: MyAppStrings.linkedinLabel,
-                    url: aboutData!['socials']['linkedin']['url'],
+                    url: aboutData['socials']['linkedin']['url'],
+                    launchUrl: launchUrl
                   ),
               ],
             ),
@@ -499,10 +453,11 @@ class _AboutPageState extends State<AboutPage>
     required String icon,
     required String label,
     required String url,
+    required Function(String) launchUrl
   }) {
     return InkWell(
       onTap: () {
-        _launchUrl(url);
+        launchUrl(url);
       },
       borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
       child: Container(
@@ -538,7 +493,7 @@ class _AboutPageState extends State<AboutPage>
                   return Container(
                     width: AppDimensions.socialIconSize,
                     height: AppDimensions.socialIconSize,
-                    color: Colors.white,
+                    color: AppColors.cardBackground,
                     child: const Icon(Icons.image_not_supported, size: 16),
                   );
                 },
@@ -559,15 +514,15 @@ class _AboutPageState extends State<AboutPage>
     );
   }
 
-  Widget _buildActionButtons() {
+  Widget _buildActionButtons(Map<String, dynamic> aboutData, Function(String) launchUrl) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         ElevatedButton.icon(
           onPressed: () {
             // Download CV logic
-            if (aboutData!['cvUrl'] != null) {
-              _launchUrl(aboutData!['cvUrl']);
+            if (aboutData['cvUrl'] != null) {
+              launchUrl(aboutData['cvUrl']);
             }
           },
           icon: const Icon(Icons.download_rounded),
@@ -591,8 +546,8 @@ class _AboutPageState extends State<AboutPage>
     );
   }
 
-  Widget _buildSkillsSection({required bool isDesktop}) {
-    final skills = skillsData!['skills'] as List;
+  Widget _buildSkillsSection(Map<String, dynamic> skillsData, bool isDesktop) {
+    final skills = skillsData['skills'] as List;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -621,7 +576,7 @@ class _AboutPageState extends State<AboutPage>
           ),
         ),
         const SizedBox(height: AppDimensions.paddingXL),
-        ...skills.map((category) => _buildSkillCategory(category, isDesktop)),
+        ...skills.map((category) => _buildSkillCategory(category, isDesktop)).toList(),
       ],
     );
   }

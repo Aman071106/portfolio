@@ -1,133 +1,19 @@
-import 'dart:convert';
-import 'dart:developer';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../utils/constants/colors.dart';
 import '../../utils/constants/dimensions.dart';
 import '../../widgets/navabar.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class HomePage extends StatefulWidget {
+import 'bloc/home_bloc.dart';
+
+class HomePage extends StatelessWidget {
   const HomePage({super.key});
-
-  @override
-  createState() => _HomePageState();
-}
-
-class _HomePageState extends State<HomePage>
-    with SingleTickerProviderStateMixin {
-  Map<String, dynamic>? homeData;
-  bool isLoading = true;
-  late AnimationController _animationController;
-  late Animation<double> _fadeAnimation;
-  late Animation<double> _slideAnimation;
-
-  // Form controllers
-  final _nameController = TextEditingController();
-  final _emailController = TextEditingController();
-  final _messageController = TextEditingController();
-  final _formKey = GlobalKey<FormState>();
-  bool _isSubmitting = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _animationController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1200),
-    );
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _animationController,
-        curve: const Interval(0.0, 0.6, curve: Curves.easeOut),
-      ),
-    );
-    _slideAnimation = Tween<double>(begin: 50.0, end: 0.0).animate(
-      CurvedAnimation(
-        parent: _animationController,
-        curve: const Interval(0.2, 0.8, curve: Curves.easeOut),
-      ),
-    );
-    _loadData();
-  }
-
-  @override
-  void dispose() {
-    _animationController.dispose();
-    _nameController.dispose();
-    _emailController.dispose();
-    _messageController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _loadData() async {
-    try {
-      // Load home.json
-      final homeString = await rootBundle.loadString('assets/data/home.json');
-      final homeJson = jsonDecode(homeString);
-
-      setState(() {
-        homeData = homeJson;
-        isLoading = false;
-      });
-      _animationController.forward();
-    } catch (e) {
-      log('Error loading home data: $e');
-      // If home.json doesn't exist, create default data
-      setState(() {
-        homeData = {
-          "name": "Aman Gupta",
-          "tagline": "AI/ML and Flutter App developer",
-          "intro":
-              "Building beautiful cross-platform applications with Flutter and exploring the frontiers of AI.",
-          "resumeUrl": "#",
-          "profileImage":
-              "https://raw.githubusercontent.com/Aman071106/IITApp/main2/ContributorImages/profilePicAman.jpg",
-        };
-        isLoading = false;
-      });
-      _animationController.forward();
-    }
-  }
 
   Future<void> _launchUrl(String url) async {
     final Uri uri = Uri.parse(url);
     if (!await launchUrl(uri)) {
       throw Exception('Could not launch $url');
-    }
-  }
-
-  Future<void> _submitContactForm() async {
-    if (_formKey.currentState!.validate()) {
-      setState(() {
-        _isSubmitting = true;
-      });
-
-      // Simulate form submission
-      await Future.delayed(const Duration(seconds: 2));
-
-      // Reset form
-      _nameController.clear();
-      _emailController.clear();
-      _messageController.clear();
-
-      setState(() {
-        _isSubmitting = false;
-      });
-
-      // Show success message
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('Message sent successfully!'),
-            backgroundColor: AppColors.accentColor,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-            ),
-          ),
-        );
-      }
     }
   }
 
@@ -148,30 +34,71 @@ class _HomePageState extends State<HomePage>
         children: [
           NavBar(currentPath: '/'),
           Expanded(
-            child:
-                isLoading
-                    ? const Center(
+            child: BlocProvider(
+              create: (context) => HomeBloc()..add(LoadHomeData()),
+              child: BlocConsumer<HomeBloc, HomeState>(
+                listener: (context, state) {
+                  if (state is HomeLoaded) {
+                    if (state.formSuccess) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: const Text('Message sent successfully!'),
+                          backgroundColor: AppColors.accentColor,
+                          behavior: SnackBarBehavior.floating,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(
+                                AppDimensions.borderRadiusM),
+                          ),
+                        ),
+                      );
+                    } else if (state.formError.isNotEmpty) {
+                       ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Error: ${state.formError}'),
+                          backgroundColor: Colors.redAccent,
+                          behavior: SnackBarBehavior.floating,
+                           shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(
+                                AppDimensions.borderRadiusM),
+                          ),
+                        ),
+                      );
+                    }
+                  }
+                },
+                builder: (context, state) {
+                  if (state is HomeLoading) {
+                    return const Center(
                       child: CircularProgressIndicator(
                         color: AppColors.primaryColor,
                       ),
-                    )
-                    : homeData == null
-                    ? const Center(child: Text('Failed to load data'))
-                    : SingleChildScrollView(
+                    );
+                  } else if (state is HomeLoaded) {
+                    final homeData = state.homeData;
+                    return SingleChildScrollView(
                       child: Column(
                         children: [
-                          _buildHeroSection(isDesktop),
-                          _buildContactSection(isDesktop),
+                          _buildHeroSection(homeData, isDesktop, _launchUrl),
+                          _buildContactSection(state, isDesktop, context),
                         ],
                       ),
-                    ),
+                    );
+                  } else if (state is HomeError) {
+                    return Center(
+                        child: Text('Failed to load home data: ${state.message}'));
+                  } else {
+                    return const Center(child: Text('Initial state'));
+                  }
+                },
+              ),
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildHeroSection(bool isDesktop) {
+  Widget _buildHeroSection(Map<String, dynamic> homeData, bool isDesktop, Function(String) launchUrl) {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
@@ -198,203 +125,40 @@ class _HomePageState extends State<HomePage>
                       ? AppDimensions.maxContentWidthDesktop
                       : AppDimensions.maxContentWidthMobile,
             ),
-            child: isDesktop ? _buildDesktopHero() : _buildMobileHero(),
+            child: isDesktop ? _buildDesktopHero(homeData, launchUrl) : _buildMobileHero(homeData, launchUrl),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildDesktopHero() {
+  Widget _buildDesktopHero(Map<String, dynamic> homeData, Function(String) launchUrl) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         // Left content
         Expanded(
           flex: 3,
-          child: AnimatedBuilder(
-            animation: _animationController,
-            builder: (context, child) {
-              return Opacity(
-                opacity: _fadeAnimation.value,
-                child: Transform.translate(
-                  offset: Offset(0, _slideAnimation.value),
-                  child: child,
-                ),
-              );
-            },
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  "Hello, I'm",
-                  style: TextStyle(
-                    fontSize: AppDimensions.fontSizeL,
-                    color: AppColors.textSecondaryColor,
-                  ),
-                ),
-                const SizedBox(height: AppDimensions.paddingS),
-                Text(
-                  homeData!['name'],
-                  style: TextStyle(
-                    fontSize: AppDimensions.fontSizeXXL * 1.5,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimaryColor,
-                    letterSpacing: 1.2,
-                  ),
-                ),
-                const SizedBox(height: AppDimensions.paddingM),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppDimensions.paddingL,
-                    vertical: AppDimensions.paddingM,
-                  ),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [AppColors.primaryColor, AppColors.accentColor],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(
-                      AppDimensions.borderRadiusL,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.primaryColor.withValues(alpha: .3),
-                        spreadRadius: 2,
-                        blurRadius: 10,
-                        offset: const Offset(0, 5),
-                      ),
-                    ],
-                  ),
-                  child: Text(
-                    homeData!['tagline'],
-                    style: TextStyle(
-                      fontSize: AppDimensions.fontSizeL,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textLightColor,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: AppDimensions.paddingXL),
-                Text(
-                  homeData!['intro'],
-                  style: TextStyle(
-                    fontSize: AppDimensions.fontSizeM,
-                    height: 1.6,
-                    color: AppColors.textSecondaryColor,
-                  ),
-                ),
-                const SizedBox(height: AppDimensions.paddingXL),
-                ElevatedButton(
-                  onPressed: () {
-                    if (homeData!['resumeUrl'] != null) {
-                      _launchUrl(homeData!['resumeUrl']);
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    foregroundColor: AppColors.textLightColor,
-                    backgroundColor: AppColors.primaryColor,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppDimensions.paddingXL,
-                      vertical: AppDimensions.paddingL,
-                    ),
-                    elevation: 5,
-                    shadowColor: AppColors.primaryColor.withValues(alpha: .5),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(
-                        AppDimensions.borderRadiusL,
-                      ),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.download_rounded),
-                      const SizedBox(width: AppDimensions.paddingM),
-                      Text(
-                        "Download Resume",
-                        style: TextStyle(
-                          fontSize: AppDimensions.fontSizeM,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-
-        const SizedBox(width: AppDimensions.paddingXXL),
-
-        // Right profile image
-        Expanded(
-          flex: 2,
-          child: AnimatedBuilder(
-            animation: _animationController,
-            builder: (context, child) {
-              return Opacity(
-                opacity: _fadeAnimation.value,
-                child: Transform.translate(
-                  offset: Offset(_slideAnimation.value * -1, 0),
-                  child: child,
-                ),
-              );
-            },
-            child: _buildProfileImage(400),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildMobileHero() {
-    return Column(
-      children: [
-        // Profile image
-        AnimatedBuilder(
-          animation: _animationController,
-          builder: (context, child) {
-            return Opacity(opacity: _fadeAnimation.value, child: child);
-          },
-          child: _buildProfileImage(AppDimensions.profileImageSizeMobile * 1.2),
-        ),
-        const SizedBox(height: AppDimensions.paddingXL),
-
-        // Content
-        AnimatedBuilder(
-          animation: _animationController,
-          builder: (context, child) {
-            return Opacity(
-              opacity: _fadeAnimation.value,
-              child: Transform.translate(
-                offset: Offset(0, _slideAnimation.value),
-                child: child,
-              ),
-            );
-          },
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
                 "Hello, I'm",
                 style: TextStyle(
-                  fontSize: AppDimensions.fontSizeM,
+                  fontSize: AppDimensions.fontSizeL,
                   color: AppColors.textSecondaryColor,
                 ),
               ),
-              const SizedBox(height: AppDimensions.paddingXS),
+              const SizedBox(height: AppDimensions.paddingS),
               Text(
-                homeData!['name'],
+                homeData['name'],
                 style: TextStyle(
-                  fontSize: AppDimensions.fontSizeXL * 1.2,
+                  fontSize: AppDimensions.fontSizeXXL * 1.5,
                   fontWeight: FontWeight.bold,
                   color: AppColors.textPrimaryColor,
                   letterSpacing: 1.2,
                 ),
-                textAlign: TextAlign.center,
               ),
               const SizedBox(height: AppDimensions.paddingM),
               Container(
@@ -421,30 +185,28 @@ class _HomePageState extends State<HomePage>
                   ],
                 ),
                 child: Text(
-                  homeData!['tagline'],
+                  homeData['tagline'],
                   style: TextStyle(
-                    fontSize: AppDimensions.fontSizeM,
+                    fontSize: AppDimensions.fontSizeL,
                     fontWeight: FontWeight.w600,
                     color: AppColors.textLightColor,
                   ),
-                  textAlign: TextAlign.center,
                 ),
               ),
-              const SizedBox(height: AppDimensions.paddingL),
+              const SizedBox(height: AppDimensions.paddingXL),
               Text(
-                homeData!['intro'],
+                homeData['intro'],
                 style: TextStyle(
                   fontSize: AppDimensions.fontSizeM,
                   height: 1.6,
                   color: AppColors.textSecondaryColor,
                 ),
-                textAlign: TextAlign.center,
               ),
               const SizedBox(height: AppDimensions.paddingXL),
               ElevatedButton(
                 onPressed: () {
-                  if (homeData!['resumeUrl'] != null) {
-                    _launchUrl(homeData!['resumeUrl']);
+                  if (homeData['resumeUrl'] != null) {
+                    launchUrl(homeData['resumeUrl']);
                   }
                 },
                 style: ElevatedButton.styleFrom(
@@ -452,7 +214,7 @@ class _HomePageState extends State<HomePage>
                   backgroundColor: AppColors.primaryColor,
                   padding: const EdgeInsets.symmetric(
                     horizontal: AppDimensions.paddingXL,
-                    vertical: AppDimensions.paddingM,
+                    vertical: AppDimensions.paddingL,
                   ),
                   elevation: 5,
                   shadowColor: AppColors.primaryColor.withValues(alpha: .5),
@@ -480,11 +242,134 @@ class _HomePageState extends State<HomePage>
             ],
           ),
         ),
+
+        const SizedBox(width: AppDimensions.paddingXXL),
+
+        // Right profile image
+        Expanded(
+          flex: 2,
+          child: _buildProfileImage(homeData, 400),
+        ),
       ],
     );
   }
 
-  Widget _buildProfileImage(double size) {
+  Widget _buildMobileHero(Map<String, dynamic> homeData, Function(String) launchUrl) {
+    return Column(
+      children: [
+        // Profile image
+        _buildProfileImage(homeData, AppDimensions.profileImageSizeMobile * 1.2),
+        const SizedBox(height: AppDimensions.paddingXL),
+
+        // Content
+        Column(
+          children: [
+            Text(
+              "Hello, I'm",
+              style: TextStyle(
+                fontSize: AppDimensions.fontSizeM,
+                color: AppColors.textSecondaryColor,
+              ),
+            ),
+            const SizedBox(height: AppDimensions.paddingXS),
+            Text(
+              homeData['name'],
+              style: TextStyle(
+                fontSize: AppDimensions.fontSizeXL * 1.2,
+                fontWeight: FontWeight.bold,
+                color: AppColors.textPrimaryColor,
+                letterSpacing: 1.2,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AppDimensions.paddingM),
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppDimensions.paddingL,
+                vertical: AppDimensions.paddingM,
+              ),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [AppColors.primaryColor, AppColors.accentColor],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(
+                  AppDimensions.borderRadiusL,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primaryColor.withValues(alpha: .3),
+                    spreadRadius: 2,
+                    blurRadius: 10,
+                    offset: const Offset(0, 5),
+                  ),
+                ],
+              ),
+              child: Text(
+                homeData['tagline'],
+                style: TextStyle(
+                  fontSize: AppDimensions.fontSizeM,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textLightColor,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+            const SizedBox(height: AppDimensions.paddingL),
+            Text(
+              homeData['intro'],
+              style: TextStyle(
+                fontSize: AppDimensions.fontSizeM,
+                height: 1.6,
+                color: AppColors.textSecondaryColor,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AppDimensions.paddingXL),
+            ElevatedButton(
+              onPressed: () {
+                if (homeData['resumeUrl'] != null) {
+                  launchUrl(homeData['resumeUrl']);
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                foregroundColor: AppColors.textLightColor,
+                backgroundColor: AppColors.primaryColor,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppDimensions.paddingXL,
+                  vertical: AppDimensions.paddingM,
+                ),
+                elevation: 5,
+                shadowColor: AppColors.primaryColor.withValues(alpha: .5),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(
+                    AppDimensions.borderRadiusL,
+                  ),
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.download_rounded),
+                  const SizedBox(width: AppDimensions.paddingM),
+                  Text(
+                    "Download Resume",
+                    style: TextStyle(
+                      fontSize: AppDimensions.fontSizeM,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildProfileImage(Map<String, dynamic> homeData, double size) {
     return Container(
       width: size,
       height: size,
@@ -526,7 +411,7 @@ class _HomePageState extends State<HomePage>
                     ),
                   ),
                   child: Image.network(
-                    "https://raw.githubusercontent.com/Aman071106/IITApp/main2/ContributorImages/profilePicAman.jpg",
+                    homeData['profileImage'],
                     fit: BoxFit.cover,
                     width: size,
                     height: size,
@@ -579,7 +464,7 @@ class _HomePageState extends State<HomePage>
     );
   }
 
-  Widget _buildContactSection(bool isDesktop) {
+  Widget _buildContactSection(HomeLoaded state, bool isDesktop, BuildContext context) {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
@@ -659,7 +544,7 @@ class _HomePageState extends State<HomePage>
                       width: 1,
                     ),
                   ),
-                  child: _buildContactForm(),
+                  child: _buildContactForm(state, context),
                 ),
               ],
             ),
@@ -669,9 +554,13 @@ class _HomePageState extends State<HomePage>
     );
   }
 
-  Widget _buildContactForm() {
+  Widget _buildContactForm(HomeLoaded state, BuildContext context) {
     return Form(
-      key: _formKey,
+      // The form key is not strictly necessary with BLoC for validation
+      // as validation can be done in the BLoC or using input decoration error text.
+      // However, if you have complex form logic requiring a FormState,
+      // you might still need a GlobalKey.
+      // key: _formKey,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -679,17 +568,12 @@ class _HomePageState extends State<HomePage>
           _buildInputLabel("Name"),
           const SizedBox(height: AppDimensions.paddingXS),
           TextFormField(
-            controller: _nameController,
+            initialValue: state.name,
+            onChanged: (value) => context.read<HomeBloc>().add(NameChanged(name: value)),
             decoration: _inputDecoration(
               "Enter your name",
               Icons.person_outline,
             ),
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Please enter your name';
-              }
-              return null;
-            },
           ),
           const SizedBox(height: AppDimensions.paddingL),
 
@@ -697,23 +581,13 @@ class _HomePageState extends State<HomePage>
           _buildInputLabel("Email"),
           const SizedBox(height: AppDimensions.paddingXS),
           TextFormField(
-            controller: _emailController,
+            initialValue: state.email,
+             onChanged: (value) => context.read<HomeBloc>().add(EmailChanged(email: value)),
             decoration: _inputDecoration(
               "Enter your email",
               Icons.email_outlined,
             ),
             keyboardType: TextInputType.emailAddress,
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Please enter your email';
-              }
-              if (!RegExp(
-                r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
-              ).hasMatch(value)) {
-                return 'Please enter a valid email';
-              }
-              return null;
-            },
           ),
           const SizedBox(height: AppDimensions.paddingL),
 
@@ -721,18 +595,13 @@ class _HomePageState extends State<HomePage>
           _buildInputLabel("Message"),
           const SizedBox(height: AppDimensions.paddingXS),
           TextFormField(
-            controller: _messageController,
+             initialValue: state.message,
+             onChanged: (value) => context.read<HomeBloc>().add(MessageChanged(message: value)),
             decoration: _inputDecoration(
               "Write your message here...",
               Icons.message_outlined,
             ),
             maxLines: 5,
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Please enter your message';
-              }
-              return null;
-            },
           ),
           const SizedBox(height: AppDimensions.paddingXL),
 
@@ -742,7 +611,7 @@ class _HomePageState extends State<HomePage>
               width: 200,
               height: 50,
               child: ElevatedButton(
-                onPressed: _isSubmitting ? null : _submitContactForm,
+                onPressed: state.isSubmitting ? null : () => context.read<HomeBloc>().add(SubmitContactForm()),
                 style: ElevatedButton.styleFrom(
                   foregroundColor: AppColors.textLightColor,
                   backgroundColor: AppColors.accentColor,
@@ -761,7 +630,7 @@ class _HomePageState extends State<HomePage>
                   ),
                 ),
                 child:
-                    _isSubmitting
+                    state.isSubmitting
                         ? const SizedBox(
                           height: 20,
                           width: 20,
@@ -787,6 +656,16 @@ class _HomePageState extends State<HomePage>
               ),
             ),
           ),
+           if (state.formError.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: AppDimensions.paddingM),
+              child: Center(
+                child: Text(
+                  state.formError,
+                  style: const TextStyle(color: Colors.redAccent),
+                ),
+              ),
+            ),
         ],
       ),
     );
@@ -839,6 +718,3 @@ class _HomePageState extends State<HomePage>
     );
   }
 }
-
-
-// Send message button implementation
