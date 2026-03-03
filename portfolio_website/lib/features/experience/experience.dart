@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../utils/constants/colors.dart';
 import '../../utils/constants/dimensions.dart';
 import '../../widgets/navabar.dart';
@@ -27,10 +28,9 @@ class _ExperiencePageState extends State<ExperiencePage>
       vsync: this,
       duration: const Duration(milliseconds: 1000),
     );
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(_animationController);
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
+    );
     _loadData();
   }
 
@@ -42,22 +42,17 @@ class _ExperiencePageState extends State<ExperiencePage>
 
   Future<void> _loadData() async {
     try {
-      // Load experience.json
       final experienceString = await rootBundle.loadString(
         'assets/data/experience.json',
       );
-      final experienceJson = jsonDecode(experienceString);
-
       setState(() {
-        experienceData = experienceJson;
+        experienceData = jsonDecode(experienceString);
         isLoading = false;
       });
       _animationController.forward();
     } catch (e) {
       log('Error loading experience data: $e');
-      setState(() {
-        isLoading = false;
-      });
+      setState(() => isLoading = false);
     }
   }
 
@@ -68,21 +63,17 @@ class _ExperiencePageState extends State<ExperiencePage>
 
     return Scaffold(
       backgroundColor: AppColors.backgroundColor,
-      appBar: AppBar(
-        toolbarHeight: 0,
-        backgroundColor: AppColors.primaryColor,
-        elevation: 0,
-      ),
-      endDrawer: isDesktop ? null : NavDrawer(currentPath: '/experience'),
+      drawer: isDesktop ? null : NavDrawer(currentPath: '/experiences'),
       body: Column(
         children: [
-          NavBar(currentPath: '/experience'),
+          NavBar(currentPath: '/experiences'),
           Expanded(
             child:
                 isLoading
                     ? const Center(
                       child: CircularProgressIndicator(
-                        color: AppColors.primaryColor,
+                        color: AppColors.accentColor,
+                        strokeWidth: 2,
                       ),
                     )
                     : experienceData == null
@@ -93,7 +84,13 @@ class _ExperiencePageState extends State<ExperiencePage>
                       opacity: _fadeAnimation,
                       child: SingleChildScrollView(
                         child: Padding(
-                          padding: const EdgeInsets.all(AppDimensions.paddingL),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: AppDimensions.paddingXL,
+                            vertical:
+                                isDesktop
+                                    ? AppDimensions.paddingXXL
+                                    : AppDimensions.paddingL,
+                          ),
                           child: Center(
                             child: ConstrainedBox(
                               constraints: BoxConstraints(
@@ -102,7 +99,19 @@ class _ExperiencePageState extends State<ExperiencePage>
                                         ? AppDimensions.maxContentWidthDesktop
                                         : AppDimensions.maxContentWidthMobile,
                               ),
-                              child: _buildExperienceContent(isDesktop),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  _buildHeader(),
+                                  const SizedBox(
+                                    height: AppDimensions.paddingXXL,
+                                  ),
+                                  _buildTimeline(isDesktop),
+                                  const SizedBox(
+                                    height: AppDimensions.paddingXXL,
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ),
@@ -114,358 +123,298 @@ class _ExperiencePageState extends State<ExperiencePage>
     );
   }
 
-  Widget _buildExperienceContent(bool isDesktop) {
+  Widget _buildHeader() {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        // Page title with animated underline
-        _buildPageTitle(),
-        const SizedBox(height: AppDimensions.paddingXXL),
-
-        // Experience timeline
-        _buildExperienceTimeline(isDesktop),
-      ],
-    );
-  }
-
-  Widget _buildPageTitle() {
-    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          "My Experience",
-          style: TextStyle(
+          "Experience",
+          style: GoogleFonts.spaceMono(
             fontSize: AppDimensions.fontSizeXXL * 1.2,
             fontWeight: FontWeight.bold,
             color: AppColors.textPrimaryColor,
           ),
         ),
         const SizedBox(height: AppDimensions.paddingS),
-        Container(
-          width: 120,
-          height: 4,
-          decoration: BoxDecoration(
-            color: AppColors.accentColor,
-            borderRadius: BorderRadius.circular(2),
-          ),
-        ),
+        Container(width: 60, height: 2, color: AppColors.accentColor),
       ],
     );
   }
 
-  Widget _buildExperienceTimeline(bool isDesktop) {
+  Widget _buildTimeline(bool isDesktop) {
     return ListView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemCount: experienceData!.length,
       itemBuilder: (context, index) {
         final experience = experienceData![index];
-        // Create staggered animation effect
-        final staggeredDelay = Duration(milliseconds: 200 * index);
-        Future.delayed(staggeredDelay, () {
-          if (mounted) setState(() {});
-        });
-
-        return Padding(
-          padding: const EdgeInsets.only(bottom: AppDimensions.paddingXL),
-          child: _buildExperienceCard(experience, index, isDesktop),
-        );
+        final isLast = index == experienceData!.length - 1;
+        return _buildTimelineItem(experience, index, isLast, isDesktop);
       },
     );
   }
 
-  Widget _buildExperienceCard(
+  Widget _buildTimelineItem(
     Map<String, dynamic> experience,
     int index,
+    bool isLast,
     bool isDesktop,
   ) {
-    final isEven = index % 2 == 0;
+    final hasLogo =
+        experience['logoUrl'] != null &&
+        experience['logoUrl'].toString().isNotEmpty;
 
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.cardBackground,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: .08),
-            spreadRadius: 2,
-            blurRadius: 15,
-            offset: const Offset(0, 5),
-          ),
-        ],
-        border: Border.all(
-          color: AppColors.primaryColor.withValues(alpha: .1),
-          width: 1,
-        ),
-      ),
-      child: Column(
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Header with company and duration
-          Container(
-            padding: const EdgeInsets.all(AppDimensions.paddingL),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  isEven ? AppColors.primaryColor : AppColors.accentColor,
-                  isEven ? AppColors.accentColor : AppColors.primaryDarkColor,
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(AppDimensions.borderRadiusL),
-                topRight: Radius.circular(AppDimensions.borderRadiusL),
-              ),
-            ),
-            child:
-                isDesktop
-                    ? Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            experience['company'],
-                            style: TextStyle(
-                              fontSize: AppDimensions.fontSizeL,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.textLightColor,
-                            ),
-                          ),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: AppDimensions.paddingM,
-                            vertical: AppDimensions.paddingXS,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: .2),
-                            borderRadius: BorderRadius.circular(
-                              AppDimensions.borderRadiusL,
-                            ),
-                          ),
-                          child: Text(
-                            experience['duration'],
-                            style: TextStyle(
-                              fontSize: AppDimensions.fontSizeS,
-                              fontWeight: FontWeight.w500,
-                              color: AppColors.textLightColor,
-                            ),
-                          ),
-                        ),
-                      ],
-                    )
-                    : Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          experience['company'],
-                          style: TextStyle(
-                            fontSize: AppDimensions.fontSizeL,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.textLightColor,
-                          ),
-                        ),
-                        const SizedBox(height: AppDimensions.paddingS),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: AppDimensions.paddingM,
-                            vertical: AppDimensions.paddingXS,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: .2),
-                            borderRadius: BorderRadius.circular(
-                              AppDimensions.borderRadiusL,
-                            ),
-                          ),
-                          child: Text(
-                            experience['duration'],
-                            style: TextStyle(
-                              fontSize: AppDimensions.fontSizeS,
-                              fontWeight: FontWeight.w500,
-                              color: AppColors.textLightColor,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-          ),
-
-          // Content
-          Padding(
-            padding: const EdgeInsets.all(AppDimensions.paddingL),
+          // Timeline line + dot
+          SizedBox(
+            width: 32,
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Position and location
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(AppDimensions.paddingS),
-                      decoration: BoxDecoration(
-                        color: AppColors.primaryColor.withValues(alpha: .1),
-                        borderRadius: BorderRadius.circular(
-                          AppDimensions.borderRadiusS,
-                        ),
-                      ),
-                      child: Icon(
-                        Icons.work_outline,
-                        color:
-                            isEven
-                                ? AppColors.primaryColor
-                                : AppColors.accentColor,
-                        size: 20,
-                      ),
+                Container(
+                  width: 12,
+                  height: 12,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color:
+                        index == 0
+                            ? AppColors.accentColor
+                            : AppColors.surfaceColor,
+                    border: Border.all(
+                      color:
+                          index == 0
+                              ? AppColors.accentColor
+                              : AppColors.borderColor,
+                      width: 2,
                     ),
-                    const SizedBox(width: AppDimensions.paddingM),
-                    Expanded(
-                      child: Text(
-                        experience['position'],
-                        style: TextStyle(
-                          fontSize: AppDimensions.fontSizeM,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.textPrimaryColor,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: AppDimensions.paddingM),
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(AppDimensions.paddingS),
-                      decoration: BoxDecoration(
-                        color: AppColors.primaryColor.withValues(alpha: .1),
-                        borderRadius: BorderRadius.circular(
-                          AppDimensions.borderRadiusS,
-                        ),
-                      ),
-                      child: Icon(
-                        Icons.location_on_outlined,
-                        color:
-                            isEven
-                                ? AppColors.primaryColor
-                                : AppColors.accentColor,
-                        size: 20,
-                      ),
-                    ),
-                    const SizedBox(width: AppDimensions.paddingM),
-                    Expanded(
-                      child: Text(
-                        experience['location'],
-                        style: TextStyle(
-                          fontSize: AppDimensions.fontSizeM,
-                          color: AppColors.textSecondaryColor,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: AppDimensions.paddingL),
-
-                // Description
-                Text(
-                  "Responsibilities:",
-                  style: TextStyle(
-                    fontSize: AppDimensions.fontSizeM,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimaryColor,
                   ),
                 ),
-                const SizedBox(height: AppDimensions.paddingM),
-
-                ..._buildDescriptionItems(experience['description'], isEven),
-
-                const SizedBox(height: AppDimensions.paddingL),
-
-                // Technologies
-                Text(
-                  "Technologies:",
-                  style: TextStyle(
-                    fontSize: AppDimensions.fontSizeM,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimaryColor,
+                if (!isLast)
+                  Expanded(
+                    child: Container(width: 1, color: AppColors.borderColor),
                   ),
-                ),
-                const SizedBox(height: AppDimensions.paddingM),
-                _buildTechnologiesList(experience['technologies'], isEven),
               ],
             ),
           ),
+          const SizedBox(width: AppDimensions.paddingM),
+          // Card content
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: AppDimensions.paddingXL),
+              child: Container(
+                padding: const EdgeInsets.all(AppDimensions.paddingXL),
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceColor,
+                  borderRadius: BorderRadius.circular(
+                    AppDimensions.borderRadiusL,
+                  ),
+                  border: Border.all(color: AppColors.borderColor),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Logo + Company + Duration
+                    Row(
+                      children: [
+                        if (hasLogo)
+                          Padding(
+                            padding: const EdgeInsets.only(
+                              right: AppDimensions.paddingM,
+                            ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(
+                                AppDimensions.borderRadiusM,
+                              ),
+                              child: Image.asset(
+                                experience['logoUrl'],
+                                width: 40,
+                                height: 40,
+                                fit: BoxFit.cover,
+                                errorBuilder:
+                                    (c, e, s) => Container(
+                                      width: 40,
+                                      height: 40,
+                                      decoration: BoxDecoration(
+                                        color: AppColors.cardBackground,
+                                        borderRadius: BorderRadius.circular(
+                                          AppDimensions.borderRadiusM,
+                                        ),
+                                      ),
+                                      child: const Icon(
+                                        Icons.work_outline,
+                                        size: 20,
+                                        color: AppColors.textSecondaryColor,
+                                      ),
+                                    ),
+                              ),
+                            ),
+                          ),
+                        Expanded(
+                          child: Wrap(
+                            spacing: AppDimensions.paddingM,
+                            runSpacing: AppDimensions.paddingS,
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            children: [
+                              Text(
+                                experience['company'],
+                                style: GoogleFonts.spaceMono(
+                                  fontSize:
+                                      isDesktop
+                                          ? AppDimensions.fontSizeL
+                                          : AppDimensions.fontSizeM,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.textPrimaryColor,
+                                ),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: AppDimensions.paddingM,
+                                  vertical: AppDimensions.paddingXS,
+                                ),
+                                decoration: BoxDecoration(
+                                  border: Border.all(
+                                    color: AppColors.borderColor,
+                                  ),
+                                  borderRadius: BorderRadius.circular(
+                                    AppDimensions.borderRadiusCircular,
+                                  ),
+                                ),
+                                child: Text(
+                                  experience['duration'],
+                                  style: GoogleFonts.inter(
+                                    fontSize: AppDimensions.fontSizeXS,
+                                    fontWeight: FontWeight.w500,
+                                    color: AppColors.textSecondaryColor,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: AppDimensions.paddingM),
+                    // Position
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.work_outline,
+                          size: 16,
+                          color: AppColors.accentColor,
+                        ),
+                        const SizedBox(width: AppDimensions.paddingS),
+                        Expanded(
+                          child: Text(
+                            experience['position'],
+                            style: GoogleFonts.inter(
+                              fontSize: AppDimensions.fontSizeM,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.accentColor,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: AppDimensions.paddingXS),
+                    // Location
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.location_on_outlined,
+                          size: 16,
+                          color: AppColors.textMutedColor,
+                        ),
+                        const SizedBox(width: AppDimensions.paddingS),
+                        Text(
+                          experience['location'],
+                          style: GoogleFonts.inter(
+                            fontSize: AppDimensions.fontSizeS,
+                            color: AppColors.textMutedColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: AppDimensions.paddingL),
+                    // Description bullets
+                    ...((experience['description'] as List<dynamic>).map(
+                      (desc) => Padding(
+                        padding: const EdgeInsets.only(
+                          bottom: AppDimensions.paddingM,
+                        ),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              margin: const EdgeInsets.only(top: 7),
+                              width: 4,
+                              height: 4,
+                              decoration: const BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: AppColors.textSecondaryColor,
+                              ),
+                            ),
+                            const SizedBox(width: AppDimensions.paddingM),
+                            Expanded(
+                              child: Text(
+                                desc,
+                                style: GoogleFonts.inter(
+                                  fontSize: AppDimensions.fontSizeS,
+                                  color: AppColors.textSecondaryColor,
+                                  height: 1.6,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )),
+                    const SizedBox(height: AppDimensions.paddingS),
+                    // Tech tags
+                    Wrap(
+                      spacing: AppDimensions.paddingS,
+                      runSpacing: AppDimensions.paddingS,
+                      children:
+                          ((experience['technologies'] as List<dynamic>)
+                              .map<Widget>(
+                                (tech) => Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: AppDimensions.paddingM,
+                                    vertical: AppDimensions.paddingXS,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.accentColor.withValues(
+                                      alpha: 0.08,
+                                    ),
+                                    borderRadius: BorderRadius.circular(
+                                      AppDimensions.borderRadiusCircular,
+                                    ),
+                                    border: Border.all(
+                                      color: AppColors.accentColor.withValues(
+                                        alpha: 0.2,
+                                      ),
+                                    ),
+                                  ),
+                                  child: Text(
+                                    tech,
+                                    style: GoogleFonts.inter(
+                                      fontSize: AppDimensions.fontSizeXS,
+                                      fontWeight: FontWeight.w500,
+                                      color: AppColors.accentColor,
+                                    ),
+                                  ),
+                                ),
+                              )
+                              .toList()),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
         ],
       ),
-    );
-  }
-
-  List<Widget> _buildDescriptionItems(List<dynamic> descriptions, bool isEven) {
-    return descriptions.map<Widget>((description) {
-      return Padding(
-        padding: const EdgeInsets.only(bottom: AppDimensions.paddingM),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              margin: const EdgeInsets.only(top: 5),
-              width: 8,
-              height: 8,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: isEven ? AppColors.primaryColor : AppColors.accentColor,
-              ),
-            ),
-            const SizedBox(width: AppDimensions.paddingM),
-            Expanded(
-              child: Text(
-                description,
-                style: TextStyle(
-                  fontSize: AppDimensions.fontSizeM,
-                  color: AppColors.textSecondaryColor,
-                  height: 1.5,
-                ),
-              ),
-            ),
-          ],
-        ),
-      );
-    }).toList();
-  }
-
-  Widget _buildTechnologiesList(List<dynamic> technologies, bool isEven) {
-    return Wrap(
-      spacing: AppDimensions.paddingM,
-      runSpacing: AppDimensions.paddingM,
-      children:
-          technologies.map<Widget>((tech) {
-            return Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppDimensions.paddingM,
-                vertical: AppDimensions.paddingXS,
-              ),
-              decoration: BoxDecoration(
-                color: (isEven ? AppColors.primaryColor : AppColors.accentColor)
-                    .withValues(alpha: .1),
-                borderRadius: BorderRadius.circular(
-                  AppDimensions.borderRadiusM,
-                ),
-                border: Border.all(
-                  color: (isEven
-                          ? AppColors.primaryColor
-                          : AppColors.accentColor)
-                      .withValues(alpha: .3),
-                  width: 1,
-                ),
-              ),
-              child: Text(
-                tech,
-                style: TextStyle(
-                  fontSize: AppDimensions.fontSizeS,
-                  fontWeight: FontWeight.w500,
-                  color:
-                      isEven ? AppColors.primaryColor : AppColors.accentColor,
-                ),
-              ),
-            );
-          }).toList(),
     );
   }
 }

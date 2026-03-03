@@ -1,0 +1,245 @@
+{
+    "major": [
+        {
+            "title": "AURORA — Agentic AI Photo Editor",
+            "description": "Mobile-first agentic AI photo editor integrating ~180M parameter vision models with ~3.2B parameter locally hosted LLMs for conversational, multi-step image editing workflows.",
+            "techStack": "Python | FastAPI | React | React Native | PyTorch | ONNX | Ollama | Computer Vision | LLM Orchestration",
+            "bullets": [
+                "Dual-mode AI architecture: Fast Agent (Gemma 3:1B, INT4) for <500ms edits + Thinking Mode (Llama 3.2 3B) for multi-step planning",
+                "3D Parallax generation (BiRefNet + Depth-Anything-V2 + MI-GAN + Three.js)",
+                "Real-time day/night & weather-aware transformations (ResNet152V2 + sky segmentation)",
+                "Object removal, segmentation (MobileSAM), inpainting (MI-GAN ONNX), and 4× super-resolution (SwinIR)",
+                "Voice-controlled editing via Deepgram STT (<2s latency)"
+            ],
+            "githubUrl": "https://github.com/Aman071106/AURORA-AGENTIC-PHOTO-EDITOR",
+            "liveUrl": null,
+            "imageUrl": "assets/project_images/1_proj.gif",
+            "category": "major"
+        },
+        {
+            "title": "Milo Mate — AI Customer Service Assistant",
+            "description": "Privacy-first AI customer support browser extension leveraging Gemini Nano on-device inference for real-time multilingual communication, summarization, transcription, and content understanding.",
+            "techStack": "Chrome Extension | Gemini Nano | RAG | FAISS | IndexedDB | Web APIs | Deepgram | Multimodal AI",
+            "bullets": [
+                "Local RAG pipeline with semantic chunking (400-word chunks), 384D embeddings, and FAISS-style cosine/L2 similarity search",
+                "Real-time multilingual voice system supporting 9+ languages with automatic detection and <500ms latency",
+                "Live meeting transcription engine with queue-based 5-second audio chunking",
+                "90% reduction in documentation search time, 3× faster query resolution"
+            ],
+            "githubUrl": "https://github.com/Aman071106/google_built_in_ai",
+            "liveUrl": null,
+            "imageUrl": "assets/project_images/2_proj.png",
+            "category": "major"
+        },
+        {
+            "title": "RSNA Intracranial Aneurysm Detection",
+            "description": "Competed in large-scale medical imaging challenge (~314GB DICOM dataset) to build a multi-label 3D aneurysm detection model across heterogeneous CTA, MRI, and MRA modalities.",
+            "techStack": "PyTorch | MONAI | DICOM Processing | 3D Medical Imaging | RadImageNet | GRU/LSTM | NVIDIA T4",
+            "bullets": [
+                "Hybrid architecture: RadImageNet pretrained CNN backbone + Bidirectional GRU for volumetric slice-wise context",
+                "Class imbalance handling with weighted cross-entropy (aneurysm weight = 13.0)",
+                "Achieved 0.59 ROC-AUC on validation/test",
+                "Preprocessed DICOM series to sorted volumetric .npy arrays with per-scan normalization"
+            ],
+            "githubUrl": "https://github.com/Aman071106/rsna_anuerysm",
+            "liveUrl": null,
+            "imageUrl": "assets/project_images/3_proj.png",
+            "category": "major"
+        },
+        {
+            "title": "Nyxara — AI Digital Security Guardian",
+            "description": "Full-stack, privacy-first digital security platform for breach detection, encrypted vault management, and AI-powered security advisory.",
+            "techStack": "Flutter Web | TypeScript | Node.js | FastAPI | MongoDB | PostgreSQL | AES-256 | JWT | Groq | Llama-3.3-70B",
+            "bullets": [
+                "XposedOrNot API for real-time breach scanning and historical compromise analysis",
+                "AI Security Advisor powered by Llama-3.3-70B via Groq API",
+                "Zero-knowledge vault: AES-256 client-side encryption, bcrypt hashing, PBKDF2 key derivation (100K iterations)",
+                "Clean Architecture + BLoC pattern with GoRouter navigation"
+            ],
+            "githubUrl": "https://github.com/Aman071106/Nyxara",
+            "liveUrl": null,
+            "imageUrl": "assets/project_images/4_proj.webp",
+            "category": "major"
+        },
+        {
+            "title": "Personal Portfolio Website",
+            "description": "Responsive personal portfolio website using Flutter Web with Firebase integration for real-time data fetching and dynamic content management.",
+            "techStack": "Flutter Web | Firebase | Dart | JSON | Firebase Hosting | CI/CD",
+            "bullets": [
+                "Modular UI architecture with reusable components and structured state management",
+                "Firebase Hosting deployment pipeline with optional GitHub-based CI/CD",
+                "JSON-based local configuration for maintainable content management"
+            ],
+            "githubUrl": "https://github.com/Aman071106/portfolio",
+            "liveUrl": "https://portfolio-web-7ea37.web.app/",
+            "imageUrl": "assets/project_images/5_proj.png",
+            "category": "major"
+        },
+        {
+            "title": "AI Presentation Deck Analyzer",
+            "description": "Command-line AI tool leveraging Gemini 2.5 Flash (1M token context) to detect factual, logical, and cross-slide inconsistencies in large PowerPoint decks (100–200+ slides).",
+            "techStack": "Python | Gemini 2.5 Flash | Multimodal AI | Prompt Engineering | python-pptx | Pillow",
+            "bullets": [
+                "Multimodal analysis: text extraction (python-pptx) + visual context ingestion (Pillow)",
+                "Single-pass large-context architecture (~50K–100K tokens per deck)",
+                "Structured JSON output for machine-readable reporting",
+                "No heavy frameworks — direct google-generativeai integration for fine-grained control"
+            ],
+            "githubUrl": "https://github.com/Aman071106/ppt_analyzer_ai",
+            "liveUrl": null,
+            "imageUrl": "assets/project_images/6_proj.png",
+            "category": "major"
+        },
+        {
+            "title": "Dropout Society — AI Wellness Platform",
+            "description": "Open-source multimodal AI wellness platform integrating computer vision, LLMs, RAG, and sensor data for personalized yoga, diet, and preventive healthcare guidance. iHub hackathon winner.",
+            "techStack": "Flutter | Python (Flask) | Node.js | MediaPipe | Gemini 2.5 | Pinecone | Groq Llama 4 | MongoDB",
+            "bullets": [
+                "Real-time yoga pose detection (30 FPS) using MediaPipe (33 keypoints) + Groq Llama 4 Scout 17B — 87% accuracy",
+                "Context-aware RAG pipeline (512D embeddings, Pinecone) with cross-feature intelligence",
+                "Multimodal medical assistant (text + image + voice + sensor) powered by Gemini 2.5 Flash",
+                "Personalized Indian diet planning with BMI-based calorie computation and regional cuisine intelligence"
+            ],
+            "githubUrl": "https://github.com/Aman071106/dropout_society",
+            "liveUrl": null,
+            "imageUrl": "assets/project_images/7_proj.gif",
+            "category": "major"
+        },
+        {
+            "title": "Agentic Real-Time Finance Tracker",
+            "description": "AI-powered real-time financial management system integrating autonomous Fetch.AI agents for personalized budgeting, expense tracking, and investment insights. FrostHack 2025 winner.",
+            "techStack": "Next.js | TypeScript | Python | Flask | RAG | Fetch.AI Agents | Pathway Vector Store | MongoDB | Docker",
+            "bullets": [
+                "Autonomous Fetch.AI agents (User Agent + Finance Advisor Agent) for AI-driven financial recommendations",
+                "RAG pipeline using Pathway Vector Store for context-aware insights based on transaction history",
+                "Real-time monitoring with budget threshold detection and automated email alerts",
+                "Containerized multi-service deployment (Flask backend, AI agents, Streamlit dashboard)"
+            ],
+            "githubUrl": "https://github.com/Aman071106/FrostHack2025",
+            "liveUrl": null,
+            "imageUrl": "assets/project_images/8_proj.gif",
+            "category": "major"
+        },
+        {
+            "title": "Fertilizer Prediction — Kaggle Playground",
+            "description": "Kaggle Playground Series (S5E6) multi-label classification challenge, optimizing Mean Average Precision at K (MAP@K) metric.",
+            "techStack": "Python | Scikit-learn | Boosting | Feature Engineering | Data Augmentation",
+            "bullets": [
+                "Improved baseline MAP from 0.2691 → 0.33517 → 0.35977 using boosting + external data",
+                "Robust cross-validation strategy aligned with MAP@K evaluation",
+                "Demonstrated data-centric ML: small volumes of high-quality external data boosted performance significantly"
+            ],
+            "githubUrl": "https://github.com/Aman071106/FertPredKaggle",
+            "liveUrl": null,
+            "imageUrl": "assets/project_images/proj_9.png",
+            "category": "major"
+        }
+    ],
+    "learning": [
+        {
+            "title": "Forest Fire Prediction",
+            "description": "Exploratory Data Analysis, Feature Engineering, Model Training (Ridge, Lasso), and Performance Evaluation.",
+            "techStack": "Python | Scikit-learn | EDA",
+            "githubUrl": "https://github.com/Aman071106/ForestFireProject",
+            "category": "learning"
+        },
+        {
+            "title": "Spam Classifier",
+            "description": "NLP classification using TQDM, Multinomial Naive Bayes, and custom Word2Vec model.",
+            "techStack": "Python | NLP | Word2Vec | Naive Bayes",
+            "githubUrl": "https://github.com/Aman071106/spamClassifier",
+            "category": "learning"
+        },
+        {
+            "title": "Sentiment Analysis (ML)",
+            "description": "ML-based NLP problem with comprehensive text preprocessing of NLP text columns.",
+            "techStack": "Python | Scikit-learn | NLP",
+            "githubUrl": "https://github.com/Aman071106/SentimentAnalysis",
+            "category": "learning"
+        },
+        {
+            "title": "IMDB Sentiment Analysis (RNN)",
+            "description": "Simple RNN architecture for sentiment classification with Keras .h5 model deployment.",
+            "techStack": "Python | Keras | RNN | Streamlit",
+            "githubUrl": "https://github.com/Aman071106/imdbSentimentAnalysis",
+            "category": "learning"
+        },
+        {
+            "title": "CNN Image Classifier",
+            "description": "CNN-based project for image classification.",
+            "techStack": "Python | TensorFlow | CNN",
+            "githubUrl": "https://github.com/Aman071106/CNN_classifier",
+            "category": "learning"
+        },
+        {
+            "title": "Multibot (RAG + LangChain)",
+            "description": "Understanding tokens, temperature, RAG, and LangChain fundamentals.",
+            "techStack": "Python | LangChain | RAG",
+            "githubUrl": "https://github.com/Aman071106/Multibot",
+            "category": "learning"
+        },
+        {
+            "title": "Agentic Search Engine",
+            "description": "Search engine tool using LangChain Agents and Tools with Streamlit frontend.",
+            "techStack": "Python | LangChain | Streamlit | Agents",
+            "githubUrl": "https://github.com/Aman071106/AgenticSearchEngine",
+            "category": "learning"
+        },
+        {
+            "title": "AskSQL — NL to SQL",
+            "description": "Natural language query interface over SQL databases using LangChain SQL Toolkit with Groq LLM.",
+            "techStack": "Python | LangChain | SQLite | MySQL | Streamlit",
+            "githubUrl": "https://github.com/Aman071106/AskSQL",
+            "category": "learning"
+        },
+        {
+            "title": "Maths Solver (Gemma)",
+            "description": "Gen AI app using LangChain and Gemma model to solve math problems with LLMMathChain.",
+            "techStack": "Python | LangChain | Gemma",
+            "githubUrl": "https://github.com/Aman071106/MathsSolver",
+            "category": "learning"
+        },
+        {
+            "title": "LectureLens — Summarizer",
+            "description": "YouTube video and webpage summarization using LLaMA3-8B via ChatGroq.",
+            "techStack": "Python | LangChain | ChatGroq | LLaMA3",
+            "githubUrl": "https://github.com/Aman071106/LectureLens",
+            "category": "learning"
+        },
+        {
+            "title": "ANN End-to-End (TF & Keras)",
+            "description": "Sequential model for both regression and classification with TensorBoard logging and Streamlit deployment.",
+            "techStack": "Python | TensorFlow | Keras | Streamlit",
+            "githubUrl": "https://github.com/Aman071106/AnnEndToEnd-tf-and-keras-",
+            "category": "learning"
+        },
+        {
+            "title": "Word Predictor (LSTM/GRU)",
+            "description": "LSTM-GRU-RNN based word predictor app deployed on Streamlit Cloud.",
+            "techStack": "Python | LSTM | GRU | RNN | Streamlit",
+            "githubUrl": "https://github.com/Aman071106/Word-predictor",
+            "category": "learning"
+        },
+        {
+            "title": "Student Performance Prediction",
+            "description": "Full ML pipeline with modular structure, EDA, and model building.",
+            "techStack": "Python | Scikit-learn | ML Pipeline",
+            "githubUrl": "https://github.com/Aman071106/StuPerformance",
+            "category": "learning"
+        },
+        {
+            "title": "CodeGear — Coding Assistant",
+            "description": "Code Llama via Ollama for code understanding and generation with Gradio UI.",
+            "techStack": "Python | Ollama | Code Llama | Gradio",
+            "githubUrl": "https://github.com/Aman071106/codeGear",
+            "category": "learning"
+        },
+        {
+            "title": "BlockOps — Blockchain Ticketing",
+            "description": "Decentralized event ticketing on Aptos blockchain with NFT-based tickets, anti-bot protection, and royalty enforcement.",
+            "techStack": "Aptos | Move | React | Web3 | Petra Wallet",
+            "githubUrl": "https://github.com/Aman071106/KrackHack_BlockChain",
+            "category": "learning"
+        }
+    ]
+}

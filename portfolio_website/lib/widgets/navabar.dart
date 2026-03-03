@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../../utils/constants/colors.dart';
-import '../../utils/constants/dimensions.dart';
-import '../../utils/constants/strings.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../utils/constants/colors.dart';
+import '../utils/constants/dimensions.dart';
+import '../utils/constants/strings.dart';
 
-// Common Navigation Bar Widget
 class NavBar extends StatelessWidget {
   final String currentPath;
-
   const NavBar({super.key, required this.currentPath});
 
   @override
@@ -16,20 +15,14 @@ class NavBar extends StatelessWidget {
     final isDesktop = screenWidth > AppDimensions.tabletBreakpoint;
 
     return Container(
+      height: AppDimensions.navBarHeight,
       decoration: BoxDecoration(
-        color: AppColors.backgroundColor,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 1),
-          ),
-        ],
+        color: AppColors.backgroundColor.withValues(alpha: 0.95),
+        border: Border(
+          bottom: BorderSide(color: AppColors.borderColor, width: 1),
+        ),
       ),
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.paddingXL,
-        vertical: AppDimensions.paddingM,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: AppDimensions.paddingXL),
       child: isDesktop ? _buildDesktopNav(context) : _buildMobileNav(context),
     );
   }
@@ -42,19 +35,15 @@ class NavBar extends StatelessWidget {
   }
 
   Widget _buildMobileNav(BuildContext context) {
-    return Column(
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            _logoWidget(),
-            IconButton(
-              icon: const Icon(Icons.menu),
-              onPressed: () {
-                Scaffold.of(context).openEndDrawer();
-              },
-            ),
-          ],
+        _logoWidget(),
+        IconButton(
+          icon: const Icon(Icons.menu, color: AppColors.textPrimaryColor),
+          onPressed: () {
+            Scaffold.of(context).openDrawer();
+          },
         ),
       ],
     );
@@ -63,10 +52,11 @@ class NavBar extends StatelessWidget {
   Widget _logoWidget() {
     return Text(
       MyAppStrings.appName,
-      style: TextStyle(
-        fontSize: AppDimensions.fontSizeXL,
+      style: GoogleFonts.spaceMono(
+        fontSize: AppDimensions.fontSizeL,
         fontWeight: FontWeight.bold,
-        color: AppColors.primaryColor,
+        color: AppColors.accentColor,
+        letterSpacing: -0.5,
       ),
     );
   }
@@ -77,45 +67,44 @@ class NavBar extends StatelessWidget {
       {'label': MyAppStrings.aboutNavLabel, 'path': '/about'},
       {'label': MyAppStrings.experienceNavLabel, 'path': '/experiences'},
       {'label': MyAppStrings.projectsNavLabel, 'path': '/projects'},
+      {'label': MyAppStrings.opensourceNavLabel, 'path': '/opensource'},
       {'label': MyAppStrings.blogNavLabel, 'path': '/blogs'},
     ];
 
     return navItems.map((item) {
       final isActive = currentPath == item['path'];
       return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: AppDimensions.paddingM),
+        padding: const EdgeInsets.symmetric(horizontal: AppDimensions.paddingS),
         child: InkWell(
           onTap: () {
             if (!isActive) {
               context.go(item['path']!);
             }
           },
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
+          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+          child: Container(
             padding: const EdgeInsets.symmetric(
               horizontal: AppDimensions.paddingM,
               vertical: AppDimensions.paddingS,
             ),
             decoration: BoxDecoration(
-              color:
-                  isActive
-                      ? AppColors.primaryColor.withValues(alpha: 0.1)
-                      : Colors.transparent,
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-              border: Border.all(
-                color: isActive ? AppColors.primaryColor : Colors.transparent,
-                width: 1.5,
+              border: Border(
+                bottom: BorderSide(
+                  color: isActive ? AppColors.accentColor : Colors.transparent,
+                  width: 2,
+                ),
               ),
             ),
             child: Text(
               item['label']!,
-              style: TextStyle(
-                fontSize: AppDimensions.fontSizeM,
-                fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
+              style: GoogleFonts.inter(
+                fontSize: AppDimensions.fontSizeS,
+                fontWeight: isActive ? FontWeight.w700 : FontWeight.w400,
                 color:
                     isActive
-                        ? AppColors.primaryColor
+                        ? AppColors.textPrimaryColor
                         : AppColors.textSecondaryColor,
+                letterSpacing: 0.5,
               ),
             ),
           ),
@@ -128,58 +117,74 @@ class NavBar extends StatelessWidget {
 // Drawer for Mobile
 class NavDrawer extends StatelessWidget {
   final String currentPath;
-
   const NavDrawer({super.key, required this.currentPath});
 
   @override
   Widget build(BuildContext context) {
     return Drawer(
-      child: Container(
-        color: AppColors.backgroundColor,
-        child: Column(
-          children: [
-            DrawerHeader(
-              decoration: const BoxDecoration(color: AppColors.primaryColor),
-              child: Center(
-                child: Text(
-                  MyAppStrings.appName,
-                  style: TextStyle(
-                    fontSize: AppDimensions.fontSizeXXL,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textLightColor,
-                  ),
-                ),
+      backgroundColor: AppColors.backgroundColor,
+      child: Column(
+        children: [
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.fromLTRB(
+              AppDimensions.paddingXL,
+              AppDimensions.paddingXXXL,
+              AppDimensions.paddingXL,
+              AppDimensions.paddingXL,
+            ),
+            decoration: BoxDecoration(
+              border: Border(
+                bottom: BorderSide(color: AppColors.borderColor, width: 1),
               ),
             ),
-            ..._buildDrawerItems(context),
-          ],
-        ),
+            child: Text(
+              MyAppStrings.appName,
+              style: GoogleFonts.spaceMono(
+                fontSize: AppDimensions.fontSizeXL,
+                fontWeight: FontWeight.bold,
+                color: AppColors.accentColor,
+              ),
+            ),
+          ),
+          const SizedBox(height: AppDimensions.paddingM),
+          ..._buildDrawerItems(context),
+        ],
       ),
     );
   }
 
   List<Widget> _buildDrawerItems(BuildContext context) {
     final navItems = [
-      {'label': MyAppStrings.homeNavLabel, 'path': '/', 'icon': Icons.home},
+      {
+        'label': MyAppStrings.homeNavLabel,
+        'path': '/',
+        'icon': Icons.home_outlined,
+      },
       {
         'label': MyAppStrings.aboutNavLabel,
         'path': '/about',
-        'icon': Icons.person,
+        'icon': Icons.person_outline,
       },
       {
         'label': MyAppStrings.experienceNavLabel,
         'path': '/experiences',
-        'icon': Icons.work,
+        'icon': Icons.work_outline,
       },
       {
         'label': MyAppStrings.projectsNavLabel,
         'path': '/projects',
-        'icon': Icons.code,
+        'icon': Icons.code_outlined,
+      },
+      {
+        'label': MyAppStrings.opensourceNavLabel,
+        'path': '/opensource',
+        'icon': Icons.merge_type_outlined,
       },
       {
         'label': MyAppStrings.blogNavLabel,
         'path': '/blogs',
-        'icon': Icons.article,
+        'icon': Icons.article_outlined,
       },
     ];
 
@@ -189,21 +194,29 @@ class NavDrawer extends StatelessWidget {
         leading: Icon(
           item['icon'] as IconData,
           color:
-              isActive ? AppColors.primaryColor : AppColors.textSecondaryColor,
+              isActive ? AppColors.accentColor : AppColors.textSecondaryColor,
+          size: 22,
         ),
         title: Text(
           item['label'].toString(),
-          style: TextStyle(
+          style: GoogleFonts.inter(
             fontSize: AppDimensions.fontSizeM,
-            fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
+            fontWeight: isActive ? FontWeight.w700 : FontWeight.w400,
             color:
                 isActive
-                    ? AppColors.primaryColor
+                    ? AppColors.textPrimaryColor
                     : AppColors.textSecondaryColor,
           ),
         ),
         selected: isActive,
-        selectedTileColor: AppColors.primaryColor.withValues(alpha: 0.1),
+        selectedTileColor: AppColors.accentColor.withValues(alpha: 0.08),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        ),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: AppDimensions.paddingXL,
+          vertical: AppDimensions.paddingXS,
+        ),
         onTap: () {
           Navigator.pop(context);
           if (!isActive) {

@@ -1,38 +1,105 @@
 [
   {
-    "company": "FrostHack (AI Agent Hackathon)",
-    "position": "AI Agent Developer",
+    "company": "CCE Fellows Portal — CCE IIT Mandi",
+    "position": "Full-Stack Web Developer & Administrator",
     "location": "IIT Mandi, India",
-    "duration": "March 2025",
+    "duration": "Nov 2025 – Present",
+    "logoUrl": "assets/experience_image/ccelogo.png",
     "description": [
-      "Built a fully functional real-time finance tracking AI agent in under 48 hours using LangChain and Fetch AI.",
-      "Integrated the agent with external APIs and memory to perform multi-step tasks autonomously.",
-      "Collaborated with a team to deploy and demo the solution at the hackathon."
+      "Built and deployed production portal using Next.js, Firebase (Auth, Firestore, Storage), Node.js serving 200+ active users; designed architecture to scale to 1k+ users.",
+      "Production deployment on institutional Linux servers using PM2 process management and Apache reverse proxy with SSL."
     ],
-    "technologies": ["LangChain", "Python", "Fetch AI", "Streamlit", "NextJS", "TypeScript"]
+    "technologies": [
+      "Next.js",
+      "Firebase",
+      "Node.js",
+      "PM2",
+      "Apache",
+      "SSL"
+    ],
+    "link": "https://cce.iitmandi.ac.in/ccefellow"
   },
   {
-    "company": "Vertex - Institute App for IIT Mandi",
+    "company": "Vertex — Institute App for IIT Mandi",
     "position": "Flutter Developer",
     "location": "IIT Mandi, India",
     "duration": "Dec 2024 – Present",
+    "logoUrl": "assets/experience_image/insti_app.png",
     "description": [
-      "Developing an all-in-one institute app for students and visitors at IIT Mandi.",
-      "Implemented features like campus navigation, virtual tours, and Firebase integration.",
-      "Built scalable Flutter architecture with clean code separation and modular widgets."
+      "Designed and implemented a dynamic Feeds module and About page, enhancing platform content visibility.",
+      "Refactored feed schema to support nullable host configuration, improving data flexibility.",
+      "Implemented automated dashboard image updates from shared resources, reducing manual maintenance.",
+      "Led UI enhancements and branding updates, including full application rename and structural navigation improvements."
     ],
-    "technologies": ["Flutter", "MongoDB", "Dart"]
+    "technologies": [
+      "Flutter",
+      "Dart",
+      "MongoDB",
+      "Firebase"
+    ]
   },
   {
-    "company": "KrackHack by GDG IIT Mandi",
-    "position": "Blockchain Developer",
+    "company": "GDG IIT Mandi",
+    "position": "Core Member — KrackHack Organizer",
     "location": "IIT Mandi, India",
-    "duration": "Feb 2025",
+    "duration": "2025",
+    "logoUrl": "assets/experience_image/gdg.png",
     "description": [
-      "Created a blockchain-based event ticketing system using Move language and Aptos blockchain.",
-      "Built a React frontend and implemented Web3 wallet connect for NFT-based ticketing.",
-      "Included features like resale marketplace, anti-bot protection, and royalty enforcement."
+      "Organised KrackHack, a 48-hour hackathon with 800+ participants from across India.",
+      "Coordinated logistics, judging panels, and technical infrastructure for the event."
     ],
-    "technologies": ["Move", "React", "Aptos", "Web3.js"]
+    "technologies": [
+      "Event Management",
+      "Community Building"
+    ]
+  },
+  {
+    "company": "Programming Club IIT Mandi",
+    "position": "Core Member — Problem Setter",
+    "location": "IIT Mandi, India",
+    "duration": "2025 – Present",
+    "logoUrl": "assets/experience_image/kamand prompt.png",
+    "description": [
+      "Problem setter at FCC (Fresher Coding Contest 2026) at IIT Mandi.",
+      "Contributing to competitive programming activities and mentoring freshers."
+    ],
+    "technologies": [
+      "C++",
+      "Competitive Programming",
+      "Problem Setting"
+    ]
+  },
+  {
+    "company": "Science & Technical Council — Student Gymkhana IIT Mandi",
+    "position": "Web Developer",
+    "location": "IIT Mandi, India",
+    "duration": "2025 – Present",
+    "logoUrl": "assets/experience_image/sntc.jpg",
+    "description": [
+      "Developing and maintaining web infrastructure for the Student Gymkhana.",
+      "Contributing to the digital presence of IIT Mandi's technical community."
+    ],
+    "technologies": [
+      "Web Development",
+      "Flutter Web"
+    ]
+  },
+  {
+    "company": "Keen Foundation — Cause IT Matters",
+    "position": "Freelance Developer",
+    "location": "Remote",
+    "duration": "2025",
+    "logoUrl": "assets/experience_image/keen.png",
+    "description": [
+      "Designed and deployed a no-code automation workflow integrating Twilio WhatsApp API with Google Sheets to collect and log user preferences.",
+      "Built end-to-end data pipeline: Incoming WhatsApp message → webhook trigger → Router-based input validation → Conditional logic → Automatic row append in Google Sheets with timestamp + phone number.",
+      "Implemented structured data logging system with validation checks to prevent incorrect inputs and ensure clean dataset collection."
+    ],
+    "technologies": [
+      "Pabbly",
+      "Twilio WhatsApp API",
+      "Google Sheets",
+      "Webhooks"
+    ]
   }
 ]

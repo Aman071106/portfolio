@@ -2,13 +2,12 @@ import 'dart:convert';
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../utils/constants/colors.dart';
 import '../../utils/constants/dimensions.dart';
-import '../../utils/constants/strings.dart';
 import '../../widgets/navabar.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-// Enhanced About Page
 class AboutPage extends StatefulWidget {
   const AboutPage({super.key});
 
@@ -31,10 +30,9 @@ class _AboutPageState extends State<AboutPage>
       vsync: this,
       duration: const Duration(milliseconds: 1000),
     );
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(_animationController);
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
+    );
     _loadData();
   }
 
@@ -46,33 +44,25 @@ class _AboutPageState extends State<AboutPage>
 
   Future<void> _loadData() async {
     try {
-      // Load about.json
       final aboutString = await rootBundle.loadString('assets/data/about.json');
-      final aboutJson = jsonDecode(aboutString);
-
-      // Load skills.json
       final skillsString = await rootBundle.loadString(
         'assets/data/skills.json',
       );
-      final skillsJson = jsonDecode(skillsString);
-
       setState(() {
-        aboutData = aboutJson;
-        skillsData = skillsJson;
+        aboutData = jsonDecode(aboutString);
+        skillsData = jsonDecode(skillsString);
         isLoading = false;
       });
       _animationController.forward();
     } catch (e) {
       log('Error loading data: $e');
-      setState(() {
-        isLoading = false;
-      });
+      setState(() => isLoading = false);
     }
   }
 
-  Future<void> _launchUrl(String url) async {
+  Future<void> _launchUrl(String url, {bool newTab = false}) async {
     final Uri uri = Uri.parse(url);
-    if (!await launchUrl(uri)) {
+    if (!await launchUrl(uri, webOnlyWindowName: newTab ? '_blank' : '_self')) {
       throw Exception('Could not launch $url');
     }
   }
@@ -84,12 +74,7 @@ class _AboutPageState extends State<AboutPage>
 
     return Scaffold(
       backgroundColor: AppColors.backgroundColor,
-      appBar: AppBar(
-        toolbarHeight: 0,
-        backgroundColor: AppColors.primaryColor,
-        elevation: 0,
-      ),
-      endDrawer: isDesktop ? null : NavDrawer(currentPath: '/about'),
+      drawer: isDesktop ? null : NavDrawer(currentPath: '/about'),
       body: Column(
         children: [
           NavBar(currentPath: '/about'),
@@ -98,7 +83,8 @@ class _AboutPageState extends State<AboutPage>
                 isLoading
                     ? const Center(
                       child: CircularProgressIndicator(
-                        color: AppColors.primaryColor,
+                        color: AppColors.accentColor,
+                        strokeWidth: 2,
                       ),
                     )
                     : aboutData == null || skillsData == null
@@ -107,7 +93,13 @@ class _AboutPageState extends State<AboutPage>
                       opacity: _fadeAnimation,
                       child: SingleChildScrollView(
                         child: Padding(
-                          padding: const EdgeInsets.all(AppDimensions.paddingL),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: AppDimensions.paddingXL,
+                            vertical:
+                                isDesktop
+                                    ? AppDimensions.paddingXXL
+                                    : AppDimensions.paddingL,
+                          ),
                           child: Center(
                             child: ConstrainedBox(
                               constraints: BoxConstraints(
@@ -116,10 +108,33 @@ class _AboutPageState extends State<AboutPage>
                                         ? AppDimensions.maxContentWidthDesktop
                                         : AppDimensions.maxContentWidthMobile,
                               ),
-                              child:
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  _buildHeader(),
+                                  const SizedBox(
+                                    height: AppDimensions.paddingXXL,
+                                  ),
                                   isDesktop
-                                      ? _buildDesktopLayout()
-                                      : _buildMobileLayout(),
+                                      ? _buildDesktopBio()
+                                      : _buildMobileBio(),
+                                  const SizedBox(
+                                    height: AppDimensions.paddingXXXL,
+                                  ),
+                                  _buildPORsSection(),
+                                  const SizedBox(
+                                    height: AppDimensions.paddingXXXL,
+                                  ),
+                                  _buildAchievementsSection(isDesktop),
+                                  const SizedBox(
+                                    height: AppDimensions.paddingXXXL,
+                                  ),
+                                  _buildSkillsSection(isDesktop),
+                                  const SizedBox(
+                                    height: AppDimensions.paddingXXL,
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ),
@@ -131,138 +146,68 @@ class _AboutPageState extends State<AboutPage>
     );
   }
 
-  Widget _buildDesktopLayout() {
+  Widget _buildHeader() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-
       children: [
-        // Page title with animated underline
-        Center(
-          child: Column(
-            children: [
-              Text(
-                "About Me",
-                style: TextStyle(
-                  fontSize: AppDimensions.fontSizeXXL * 1.2,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimaryColor,
-                ),
-              ),
-              const SizedBox(height: AppDimensions.paddingS),
-              Container(
-                width: 100,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: AppColors.accentColor,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ],
+        Text(
+          "About Me",
+          style: GoogleFonts.spaceMono(
+            fontSize: AppDimensions.fontSizeXXL * 1.2,
+            fontWeight: FontWeight.bold,
+            color: AppColors.textPrimaryColor,
           ),
         ),
-        const SizedBox(height: AppDimensions.paddingXXL),
-        // About section with profile in a row
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Profile image with animations
-            _buildProfileImage(AppDimensions.profileImageSizeDesktop),
-            const SizedBox(width: AppDimensions.paddingXL),
-            // Bio information
-            Expanded(child: _buildBioSection()),
-          ],
-        ),
-        const SizedBox(height: AppDimensions.paddingXXL),
-        // Skills section with card layout
-        _buildSkillsSection(isDesktop: true),
+        const SizedBox(height: AppDimensions.paddingS),
+        Container(width: 60, height: 2, color: AppColors.accentColor),
       ],
     );
   }
 
-  Widget _buildMobileLayout() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
+  Widget _buildDesktopBio() {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Page title with animated underline
-        Column(
-          children: [
-            Text(
-              "About Me",
-              style: TextStyle(
-                fontSize: AppDimensions.fontSizeXL,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textPrimaryColor,
-              ),
-            ),
-            const SizedBox(height: AppDimensions.paddingS),
-            Container(
-              width: 80,
-              height: 3,
-              decoration: BoxDecoration(
-                color: AppColors.accentColor,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: AppDimensions.paddingXL),
-        // Profile image centered with animations
+        _buildProfileImage(AppDimensions.profileImageSizeDesktop),
+        const SizedBox(width: AppDimensions.paddingXXL),
+        Expanded(child: _buildBioContent()),
+      ],
+    );
+  }
+
+  Widget _buildMobileBio() {
+    return Column(
+      children: [
         _buildProfileImage(AppDimensions.profileImageSizeMobile),
-        const SizedBox(height: AppDimensions.paddingL),
-        // Bio information
-        _buildBioSection(),
         const SizedBox(height: AppDimensions.paddingXL),
-        // Skills section with card layout
-        _buildSkillsSection(isDesktop: false),
+        _buildBioContent(),
       ],
     );
   }
 
   Widget _buildProfileImage(double size) {
-    return Container(
+    return SizedBox(
       width: size,
       height: size,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        gradient: const LinearGradient(
-          colors: [AppColors.primaryColor, AppColors.accentColor],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primaryColor.withValues(alpha: .4),
-            spreadRadius: 5,
-            blurRadius: 15,
-            offset: const Offset(0, 5),
+      child: Container(
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: AppColors.accentColor.withValues(alpha: 0.3),
+            width: 2,
           ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(4.0),
+        ),
         child: ClipOval(
-          child: Image.network(
-            aboutData!['profileImage'],
+          child: Image.asset(
+            aboutData!['profileImage'] ?? 'assets/profile.jpeg',
             fit: BoxFit.cover,
-            loadingBuilder: (context, child, loadingProgress) {
-              if (loadingProgress == null) return child;
-              return Center(
-                child: CircularProgressIndicator(
-                  value:
-                      loadingProgress.expectedTotalBytes != null
-                          ? loadingProgress.cumulativeBytesLoaded /
-                              loadingProgress.expectedTotalBytes!
-                          : null,
-                  color: AppColors.textLightColor,
-                ),
-              );
-            },
             errorBuilder: (context, error, stackTrace) {
-              return Center(
+              return Container(
+                color: AppColors.surfaceColor,
                 child: Icon(
                   Icons.person,
-                  size: size * 0.5,
-                  color: AppColors.textLightColor,
+                  size: size * 0.4,
+                  color: AppColors.textSecondaryColor,
                 ),
               );
             },
@@ -272,221 +217,327 @@ class _AboutPageState extends State<AboutPage>
     );
   }
 
-  Widget _buildBioSection() {
+  Widget _buildBioContent() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          aboutData!['name'],
-          style: TextStyle(
+          aboutData!['name'] ?? '',
+          style: GoogleFonts.spaceMono(
             fontSize: AppDimensions.fontSizeXXL,
             fontWeight: FontWeight.bold,
             color: AppColors.textPrimaryColor,
-            letterSpacing: 1.2,
           ),
         ),
         const SizedBox(height: AppDimensions.paddingXS),
         Text(
-          aboutData!['displayName'],
-          style: TextStyle(
+          aboutData!['displayName'] ?? '',
+          style: GoogleFonts.spaceMono(
             fontSize: AppDimensions.fontSizeL,
-            fontWeight: FontWeight.w500,
+            fontWeight: FontWeight.w400,
             color: AppColors.accentColor,
-            letterSpacing: 0.8,
           ),
         ),
-        const SizedBox(height: AppDimensions.paddingXS),
+        const SizedBox(height: AppDimensions.paddingM),
         Container(
           padding: const EdgeInsets.symmetric(
             horizontal: AppDimensions.paddingM,
             vertical: AppDimensions.paddingS,
           ),
           decoration: BoxDecoration(
-            color: AppColors.primaryColor.withValues(alpha: .1),
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
-            border: Border.all(
-              color: AppColors.primaryColor.withValues(alpha: .3),
+            border: Border.all(color: AppColors.borderColor),
+            borderRadius: BorderRadius.circular(
+              AppDimensions.borderRadiusCircular,
             ),
           ),
           child: Text(
             aboutData!['title'] ?? '',
-            style: TextStyle(
-              fontSize: AppDimensions.fontSizeM,
+            style: GoogleFonts.inter(
+              fontSize: AppDimensions.fontSizeS,
               fontWeight: FontWeight.w500,
-              color: AppColors.primaryColor,
-            ),
-          ),
-        ),
-        const SizedBox(height: AppDimensions.paddingL),
-        Container(
-          padding: const EdgeInsets.all(AppDimensions.paddingL),
-          decoration: BoxDecoration(
-            color: AppColors.cardBackground,
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: .05),
-                spreadRadius: 1,
-                blurRadius: 10,
-                offset: const Offset(0, 5),
-              ),
-            ],
-          ),
-          child: Text(
-            aboutData!['bio'] ?? '',
-            style: TextStyle(
-              fontSize: AppDimensions.fontSizeM,
               color: AppColors.textSecondaryColor,
-              height: 1.6,
-              letterSpacing: 0.3,
             ),
           ),
         ),
         const SizedBox(height: AppDimensions.paddingL),
+        Text(
+          aboutData!['bio'] ?? '',
+          style: GoogleFonts.inter(
+            fontSize: AppDimensions.fontSizeM,
+            color: AppColors.textSecondaryColor,
+            height: 1.7,
+          ),
+        ),
+        const SizedBox(height: AppDimensions.paddingXL),
         _buildContactInfo(),
         const SizedBox(height: AppDimensions.paddingL),
         _buildSocialLinks(),
         const SizedBox(height: AppDimensions.paddingL),
-        _buildActionButtons(),
+        _buildCVButton(),
       ],
     );
   }
 
   Widget _buildContactInfo() {
-    return Container(
-      padding: const EdgeInsets.all(AppDimensions.paddingL),
-      decoration: BoxDecoration(
-        color: AppColors.cardBackground,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: .05),
-            spreadRadius: 1,
-            blurRadius: 10,
-            offset: const Offset(0, 5),
-          ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildInfoRow(Icons.location_on_outlined, aboutData!['location'] ?? ''),
+        const SizedBox(height: AppDimensions.paddingM),
+        _buildInfoRow(Icons.email_outlined, aboutData!['email'] ?? ''),
+        if (aboutData!['phone'] != null) ...[
+          const SizedBox(height: AppDimensions.paddingM),
+          _buildInfoRow(Icons.phone_outlined, aboutData!['phone']),
         ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            "Contact Me",
-            style: TextStyle(
+      ],
+    );
+  }
+
+  Widget _buildInfoRow(IconData icon, String text) {
+    return Row(
+      children: [
+        Icon(icon, size: 18, color: AppColors.accentColor),
+        const SizedBox(width: AppDimensions.paddingM),
+        Expanded(
+          child: Text(
+            text,
+            style: GoogleFonts.inter(
               fontSize: AppDimensions.fontSizeM,
-              fontWeight: FontWeight.bold,
-              color: AppColors.textPrimaryColor,
+              color: AppColors.textSecondaryColor,
             ),
           ),
-          const SizedBox(height: AppDimensions.paddingM),
-          // Location
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(AppDimensions.paddingS),
-                decoration: BoxDecoration(
-                  color: AppColors.primaryColor.withValues(alpha: .1),
-                  borderRadius: BorderRadius.circular(
-                    AppDimensions.borderRadiusS,
-                  ),
-                ),
-                child: const Icon(
-                  Icons.location_on_outlined,
-                  color: AppColors.primaryColor,
-                  size: 20,
-                ),
-              ),
-              const SizedBox(width: AppDimensions.paddingM),
-              Expanded(
-                child: Text(
-                  '${MyAppStrings.locationLabel}: ${aboutData!['location'] ?? ''}',
-                  style: TextStyle(
-                    fontSize: AppDimensions.fontSizeM,
-                    color: AppColors.textSecondaryColor,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: AppDimensions.paddingM),
-          // Email
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(AppDimensions.paddingS),
-                decoration: BoxDecoration(
-                  color: AppColors.primaryColor.withValues(alpha: .1),
-                  borderRadius: BorderRadius.circular(
-                    AppDimensions.borderRadiusS,
-                  ),
-                ),
-                child: const Icon(
-                  Icons.email_outlined,
-                  color: AppColors.primaryColor,
-                  size: 20,
-                ),
-              ),
-              const SizedBox(width: AppDimensions.paddingM),
-              Expanded(
-                child: Text(
-                  '${MyAppStrings.emailLabel}: ${aboutData!['email'] ?? ''}',
-                  style: TextStyle(
-                    fontSize: AppDimensions.fontSizeM,
-                    color: AppColors.textSecondaryColor,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
   Widget _buildSocialLinks() {
-    return Container(
-      padding: const EdgeInsets.all(AppDimensions.paddingL),
-      decoration: BoxDecoration(
-        color: AppColors.cardBackground,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: .05),
-            spreadRadius: 1,
-            blurRadius: 10,
-            offset: const Offset(0, 5),
+    final socials = aboutData!['socials'] as Map<String, dynamic>? ?? {};
+    return Wrap(
+      spacing: AppDimensions.paddingM,
+      runSpacing: AppDimensions.paddingM,
+      children:
+          socials.entries.map((entry) {
+            final social = entry.value as Map<String, dynamic>;
+            return InkWell(
+              onTap: () => _launchUrl(social['url']),
+              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppDimensions.paddingM,
+                  vertical: AppDimensions.paddingS,
+                ),
+                decoration: BoxDecoration(
+                  border: Border.all(color: AppColors.borderColor),
+                  borderRadius: BorderRadius.circular(
+                    AppDimensions.borderRadiusM,
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(
+                        AppDimensions.borderRadiusS,
+                      ),
+                      child: Image.network(
+                        social['icon'] ?? '',
+                        width: 20,
+                        height: 20,
+                        errorBuilder:
+                            (c, e, s) => const Icon(
+                              Icons.link,
+                              size: 20,
+                              color: AppColors.textSecondaryColor,
+                            ),
+                      ),
+                    ),
+                    const SizedBox(width: AppDimensions.paddingS),
+                    Text(
+                      entry.key.substring(0, 1).toUpperCase() +
+                          entry.key.substring(1),
+                      style: GoogleFonts.inter(
+                        fontSize: AppDimensions.fontSizeS,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.textSecondaryColor,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }).toList(),
+    );
+  }
+
+  Widget _buildCVButton() {
+    return InkWell(
+      onTap: () {
+        if (aboutData!['cvUrl'] != null) _launchUrl(aboutData!['cvUrl']);
+      },
+      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusCircular),
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppDimensions.paddingXL,
+          vertical: AppDimensions.paddingM,
+        ),
+        decoration: BoxDecoration(
+          color: AppColors.accentColor,
+          borderRadius: BorderRadius.circular(
+            AppDimensions.borderRadiusCircular,
           ),
-        ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              Icons.download_rounded,
+              size: 18,
+              color: AppColors.backgroundColor,
+            ),
+            const SizedBox(width: AppDimensions.paddingS),
+            Text(
+              "Download CV",
+              style: GoogleFonts.inter(
+                fontSize: AppDimensions.fontSizeS,
+                fontWeight: FontWeight.w600,
+                color: AppColors.backgroundColor,
+              ),
+            ),
+          ],
+        ),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            MyAppStrings.socialsLabel,
-            style: TextStyle(
-              fontSize: AppDimensions.fontSizeM,
-              fontWeight: FontWeight.bold,
-              color: AppColors.textPrimaryColor,
+    );
+  }
+
+  Widget _buildPORsSection() {
+    final pors = aboutData!['pors'] as List<dynamic>? ?? [];
+    if (pors.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionTitle("Positions of Responsibility"),
+        const SizedBox(height: AppDimensions.paddingXL),
+        ...pors.map(
+          (por) => Padding(
+            padding: const EdgeInsets.only(bottom: AppDimensions.paddingM),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  margin: const EdgeInsets.only(top: 8),
+                  width: 6,
+                  height: 6,
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: AppColors.accentColor,
+                  ),
+                ),
+                const SizedBox(width: AppDimensions.paddingM),
+                Expanded(
+                  child: Text(
+                    por,
+                    style: GoogleFonts.inter(
+                      fontSize: AppDimensions.fontSizeM,
+                      color: AppColors.textSecondaryColor,
+                      height: 1.6,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: AppDimensions.paddingM),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAchievementsSection(bool isDesktop) {
+    final achievements = aboutData!['achievements'] as List<dynamic>? ?? [];
+    if (achievements.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionTitle("Achievements"),
+        const SizedBox(height: AppDimensions.paddingXL),
+        GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: isDesktop ? 3 : 1,
+            crossAxisSpacing: AppDimensions.paddingL,
+            mainAxisSpacing: AppDimensions.paddingL,
+            childAspectRatio: isDesktop ? 1.6 : 2.2,
+          ),
+          itemCount: achievements.length,
+          itemBuilder: (context, index) {
+            final achievement = achievements[index];
+            return _buildAchievementCard(achievement);
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAchievementCard(Map<String, dynamic> achievement) {
+    final hasImage = achievement['image'] != null;
+    return Container(
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
+        border: Border.all(color: AppColors.borderColor),
+        color: AppColors.surfaceColor,
+      ),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          if (hasImage)
+            Image.asset(
+              achievement['image'],
+              fit: BoxFit.cover,
+              errorBuilder:
+                  (c, e, s) => Container(color: AppColors.surfaceColor),
+            ),
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Colors.black.withValues(alpha: hasImage ? 0.7 : 0.0),
+                  Colors.black.withValues(alpha: hasImage ? 0.9 : 0.0),
+                ],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(AppDimensions.paddingL),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (aboutData!['socials']?['github'] != null)
-                  _buildSocialButton(
-                    icon: aboutData!['socials']['github']['icon'],
-                    label: MyAppStrings.githubLabel,
-                    url: aboutData!['socials']['github']['url'],
+                Text(
+                  achievement['title'] ?? '',
+                  style: GoogleFonts.inter(
+                    fontSize: AppDimensions.fontSizeM,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimaryColor,
                   ),
-                const SizedBox(width: AppDimensions.paddingM),
-                if (aboutData!['socials']?['linkedin'] != null)
-                  _buildSocialButton(
-                    icon: aboutData!['socials']['linkedin']['icon'],
-                    label: MyAppStrings.linkedinLabel,
-                    url: aboutData!['socials']['linkedin']['url'],
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: AppDimensions.paddingXS),
+                Text(
+                  achievement['subtitle'] ?? '',
+                  style: GoogleFonts.inter(
+                    fontSize: AppDimensions.fontSizeS,
+                    color: AppColors.textSecondaryColor,
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ],
             ),
           ),
@@ -495,131 +546,12 @@ class _AboutPageState extends State<AboutPage>
     );
   }
 
-  Widget _buildSocialButton({
-    required String icon,
-    required String label,
-    required String url,
-  }) {
-    return InkWell(
-      onTap: () {
-        _launchUrl(url);
-      },
-      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-      child: Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppDimensions.paddingM,
-          vertical: AppDimensions.paddingS,
-        ),
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [AppColors.primaryColor, AppColors.primaryDarkColor],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.primaryColor.withValues(alpha: .3),
-              spreadRadius: 1,
-              blurRadius: 5,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
-              child: Image.network(
-                icon,
-                width: AppDimensions.socialIconSize,
-                height: AppDimensions.socialIconSize,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    width: AppDimensions.socialIconSize,
-                    height: AppDimensions.socialIconSize,
-                    color: Colors.white,
-                    child: const Icon(Icons.image_not_supported, size: 16),
-                  );
-                },
-              ),
-            ),
-            const SizedBox(width: AppDimensions.paddingM),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: AppDimensions.fontSizeS,
-                fontWeight: FontWeight.w500,
-                color: AppColors.textLightColor,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildActionButtons() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        ElevatedButton.icon(
-          onPressed: () {
-            // Download CV logic
-            if (aboutData!['cvUrl'] != null) {
-              _launchUrl(aboutData!['cvUrl']);
-            }
-          },
-          icon: const Icon(Icons.download_rounded),
-          label: Text(MyAppStrings.downloadCVButton),
-          style: ElevatedButton.styleFrom(
-            foregroundColor: AppColors.textLightColor,
-            backgroundColor: AppColors.primaryColor,
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppDimensions.paddingL,
-              vertical: AppDimensions.paddingM,
-            ),
-            elevation: 5,
-            shadowColor: AppColors.primaryColor.withValues(alpha: .5),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
-            ),
-          ),
-        ),
-        const SizedBox(width: AppDimensions.paddingM),
-      ],
-    );
-  }
-
-  Widget _buildSkillsSection({required bool isDesktop}) {
+  Widget _buildSkillsSection(bool isDesktop) {
     final skills = skillsData!['skills'] as List;
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Center(
-          child: Column(
-            children: [
-              Text(
-                MyAppStrings.skillsTitle,
-                style: TextStyle(
-                  fontSize: AppDimensions.fontSizeXL,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimaryColor,
-                ),
-              ),
-              const SizedBox(height: AppDimensions.paddingS),
-              Container(
-                width: 80,
-                height: 3,
-                decoration: BoxDecoration(
-                  color: AppColors.accentColor,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ],
-          ),
-        ),
+        _buildSectionTitle("Skills & Tools"),
         const SizedBox(height: AppDimensions.paddingXL),
         ...skills.map((category) => _buildSkillCategory(category, isDesktop)),
       ],
@@ -628,166 +560,85 @@ class _AboutPageState extends State<AboutPage>
 
   Widget _buildSkillCategory(Map<String, dynamic> category, bool isDesktop) {
     final items = category['items'] as List;
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Center the heading container on mobile, keep left-aligned on desktop
-        isDesktop
-            ? Container(
-              margin: const EdgeInsets.only(bottom: AppDimensions.paddingL),
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppDimensions.paddingM,
-                vertical: AppDimensions.paddingS,
-              ),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [AppColors.primaryColor, AppColors.accentColor],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(
-                  AppDimensions.borderRadiusM,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.primaryColor.withValues(alpha: .3),
-                    spreadRadius: 1,
-                    blurRadius: 5,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Text(
-                category['category'],
-                style: TextStyle(
-                  fontSize: AppDimensions.fontSizeM,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textLightColor,
-                ),
-              ),
-            )
-            : Center(
-              // Center on mobile
-              child: Container(
-                margin: const EdgeInsets.only(bottom: AppDimensions.paddingL),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppDimensions.paddingM,
-                  vertical: AppDimensions.paddingS,
-                ),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [AppColors.primaryColor, AppColors.accentColor],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(
-                    AppDimensions.borderRadiusM,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.primaryColor.withValues(alpha: .3),
-                      spreadRadius: 1,
-                      blurRadius: 5,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Text(
-                  category['category'],
-                  style: TextStyle(
-                    fontSize: AppDimensions.fontSizeM,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textLightColor,
-                  ),
-                ),
-              ),
-            ),
-        isDesktop
-            ? Wrap(
-              spacing: AppDimensions.paddingL,
-              runSpacing: AppDimensions.paddingL,
-              children:
-                  items.map<Widget>((item) => _buildSkillItem(item)).toList(),
-            )
-            : Wrap(
-              
-              children:
-                  items
-                      .map<Widget>(
-                        (item) => Container(
-                          width: double.infinity, // Take full width
-                          margin: const EdgeInsets.only(
-                            bottom: AppDimensions.paddingL,
-                          ),
-                          child: Center(
-                            // Center the skill item
-                            child: _buildSkillItem(item),
-                          ),
-                        ),
-                      )
-                      .toList(),
-            ),
+        Text(
+          category['category'],
+          style: GoogleFonts.spaceMono(
+            fontSize: AppDimensions.fontSizeM,
+            fontWeight: FontWeight.w700,
+            color: AppColors.accentColor,
+          ),
+        ),
+        const SizedBox(height: AppDimensions.paddingM),
+        Wrap(
+          spacing: AppDimensions.paddingM,
+          runSpacing: AppDimensions.paddingM,
+          children: items.map<Widget>((item) => _buildSkillChip(item)).toList(),
+        ),
         const SizedBox(height: AppDimensions.paddingXL),
       ],
     );
   }
 
-  Widget _buildSkillItem(Map<String, dynamic> item) {
+  Widget _buildSkillChip(Map<String, dynamic> item) {
     return Container(
-      width: AppDimensions.skillCardWidth,
-      padding: const EdgeInsets.all(AppDimensions.paddingL),
-      decoration: BoxDecoration(
-        color: AppColors.skillItemBackground,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: .08),
-            spreadRadius: 2,
-            blurRadius: 10,
-            offset: const Offset(0, 5),
-          ),
-        ],
-        border: Border.all(
-          color: AppColors.primaryColor.withValues(alpha: .1),
-          width: 2,
-        ),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppDimensions.paddingM,
+        vertical: AppDimensions.paddingS,
       ),
-      child: Column(
+      decoration: BoxDecoration(
+        border: Border.all(color: AppColors.borderColor),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        color: AppColors.surfaceColor,
+      ),
+      child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
-            padding: const EdgeInsets.all(AppDimensions.paddingM),
-            decoration: BoxDecoration(
-              color: AppColors.primaryColor.withValues(alpha: .05),
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-            ),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
             child: Image.network(
-              item['logo'],
-              width: AppDimensions.skillIconSize,
-              height: AppDimensions.skillIconSize,
-              errorBuilder: (context, error, stackTrace) {
-                return Container(
-                  width: AppDimensions.skillIconSize,
-                  height: AppDimensions.skillIconSize,
-                  color: AppColors.cardBackground,
-                  child: const Icon(Icons.code, color: AppColors.primaryColor),
-                );
-              },
+              item['logo'] ?? '',
+              width: 22,
+              height: 22,
+              errorBuilder:
+                  (c, e, s) => const Icon(
+                    Icons.code,
+                    size: 22,
+                    color: AppColors.textSecondaryColor,
+                  ),
             ),
           ),
-          const SizedBox(height: AppDimensions.paddingM),
+          const SizedBox(width: AppDimensions.paddingS),
           Text(
             item['name'],
-            style: TextStyle(
-              fontSize: AppDimensions.fontSizeM,
-              fontWeight: FontWeight.w600,
-              color: AppColors.secondaryAccentColor,
+            style: GoogleFonts.inter(
+              fontSize: AppDimensions.fontSizeS,
+              fontWeight: FontWeight.w500,
+              color: AppColors.textPrimaryColor,
             ),
-            textAlign: TextAlign.center,
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildSectionTitle(String title) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: GoogleFonts.spaceMono(
+            fontSize: AppDimensions.fontSizeXL,
+            fontWeight: FontWeight.bold,
+            color: AppColors.textPrimaryColor,
+          ),
+        ),
+        const SizedBox(height: AppDimensions.paddingS),
+        Container(width: 40, height: 2, color: AppColors.accentColor),
+      ],
     );
   }
 }

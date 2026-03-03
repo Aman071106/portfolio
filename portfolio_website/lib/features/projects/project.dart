@@ -1,4 +1,6 @@
+import 'dart:developer';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:portfolio_website/features/projects/project_model.dart';
 import 'package:portfolio_website/features/projects/project_service.dart';
 import '../../utils/constants/colors.dart';
@@ -15,35 +17,21 @@ class ProjectsPage extends StatefulWidget {
 
 class _ProjectsPageState extends State<ProjectsPage>
     with SingleTickerProviderStateMixin {
-  List<dynamic>? projectsData;
+  Map<String, List<Project>>? projectsData;
   bool isLoading = true;
+  String selectedTab = 'major';
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
-  late Animation<double> _slideAnimation;
-
-  Future<List<Project>> fetchProject() async {
-    ProjectService service = ProjectService();
-    return await service.fetchProjects();
-  }
 
   @override
   void initState() {
     super.initState();
     _animationController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1200),
+      duration: const Duration(milliseconds: 1000),
     );
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _animationController,
-        curve: const Interval(0.0, 0.6, curve: Curves.easeOut),
-      ),
-    );
-    _slideAnimation = Tween<double>(begin: 50.0, end: 0.0).animate(
-      CurvedAnimation(
-        parent: _animationController,
-        curve: const Interval(0.2, 0.8, curve: Curves.easeOut),
-      ),
+      CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
     );
     _loadData();
   }
@@ -56,43 +44,34 @@ class _ProjectsPageState extends State<ProjectsPage>
 
   Future<void> _loadData() async {
     try {
-      List<Project> projects = await fetchProject();
-
+      final service = ProjectService();
+      final data = await service.fetchProjects();
       setState(() {
-        projectsData = projects;
+        projectsData = data;
         isLoading = false;
       });
       _animationController.forward();
     } catch (e) {
-      // print("Error fetching projects: $e");
-      setState(() {
-        isLoading = false;
-        projectsData = List.empty();
-      });
-      _animationController.forward();
+      log('Error loading projects: $e');
+      setState(() => isLoading = false);
     }
   }
 
-  Future<void> _launchUrl(String url) async {
+  Future<void> _launchUrl(String url, {bool newTab = false}) async {
     final Uri uri = Uri.parse(url);
-    if (!await launchUrl(uri)) {
+    if (!await launchUrl(uri, webOnlyWindowName: newTab ? '_blank' : '_self')) {
       throw Exception('Could not launch $url');
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final screenSize = MediaQuery.of(context).size;
-    final isDesktop = screenSize.width > AppDimensions.tabletBreakpoint;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isDesktop = screenWidth > AppDimensions.tabletBreakpoint;
 
     return Scaffold(
       backgroundColor: AppColors.backgroundColor,
-      appBar: AppBar(
-        toolbarHeight: 0,
-        backgroundColor: AppColors.primaryColor,
-        elevation: 0,
-      ),
-      endDrawer: isDesktop ? null : NavDrawer(currentPath: '/projects'),
+      drawer: isDesktop ? null : NavDrawer(currentPath: '/projects'),
       body: Column(
         children: [
           NavBar(currentPath: '/projects'),
@@ -101,17 +80,53 @@ class _ProjectsPageState extends State<ProjectsPage>
                 isLoading
                     ? const Center(
                       child: CircularProgressIndicator(
-                        color: AppColors.primaryColor,
+                        color: AppColors.accentColor,
+                        strokeWidth: 2,
                       ),
                     )
                     : projectsData == null
-                    ? const Center(child: Text('Failed to load data'))
-                    : SingleChildScrollView(
-                      child: Column(
-                        children: [
-                          _buildProjectsHeader(isDesktop),
-                          _buildProjectsGrid(isDesktop),
-                        ],
+                    ? const Center(child: Text('Failed to load projects'))
+                    : FadeTransition(
+                      opacity: _fadeAnimation,
+                      child: SingleChildScrollView(
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: AppDimensions.paddingXL,
+                            vertical:
+                                isDesktop
+                                    ? AppDimensions.paddingXXL
+                                    : AppDimensions.paddingL,
+                          ),
+                          child: Center(
+                            child: ConstrainedBox(
+                              constraints: BoxConstraints(
+                                maxWidth:
+                                    isDesktop
+                                        ? AppDimensions.maxContentWidthDesktop
+                                        : AppDimensions.maxContentWidthMobile,
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  _buildHeader(),
+                                  const SizedBox(
+                                    height: AppDimensions.paddingXL,
+                                  ),
+                                  _buildTabSelector(),
+                                  const SizedBox(
+                                    height: AppDimensions.paddingXXL,
+                                  ),
+                                  selectedTab == 'major'
+                                      ? _buildMajorProjects(isDesktop)
+                                      : _buildLearningProjects(isDesktop),
+                                  const SizedBox(
+                                    height: AppDimensions.paddingXXL,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
                       ),
                     ),
           ),
@@ -120,339 +135,365 @@ class _ProjectsPageState extends State<ProjectsPage>
     );
   }
 
-  Widget _buildProjectsHeader(bool isDesktop) {
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            AppColors.primaryColor.withValues(alpha: .1),
-            AppColors.backgroundColor,
-          ],
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
+  Widget _buildHeader() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          "Projects",
+          style: GoogleFonts.spaceMono(
+            fontSize: AppDimensions.fontSizeXXL * 1.2,
+            fontWeight: FontWeight.bold,
+            color: AppColors.textPrimaryColor,
+          ),
+        ),
+        const SizedBox(height: AppDimensions.paddingS),
+        Container(width: 60, height: 2, color: AppColors.accentColor),
+      ],
+    );
+  }
+
+  Widget _buildTabSelector() {
+    return Row(
+      children: [
+        Expanded(child: _buildTab('Major Projects', 'major')),
+        const SizedBox(width: AppDimensions.paddingS),
+        Expanded(child: _buildTab('Learning Projects', 'learning')),
+      ],
+    );
+  }
+
+  Widget _buildTab(String label, String tab) {
+    final isActive = selectedTab == tab;
+    return InkWell(
+      onTap: () => setState(() => selectedTab = tab),
+      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusCircular),
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppDimensions.paddingM,
+          vertical: AppDimensions.paddingM,
+        ),
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: isActive ? AppColors.accentColor : Colors.transparent,
+          border: Border.all(
+            color: isActive ? AppColors.accentColor : AppColors.borderColor,
+          ),
+          borderRadius: BorderRadius.circular(
+            AppDimensions.borderRadiusCircular,
+          ),
+        ),
+        child: Text(
+          label,
+          style: GoogleFonts.inter(
+            fontSize: AppDimensions.fontSizeS,
+            fontWeight: FontWeight.w600,
+            color:
+                isActive
+                    ? AppColors.backgroundColor
+                    : AppColors.textSecondaryColor,
+          ),
         ),
       ),
-      child: Padding(
-        padding: EdgeInsets.symmetric(
-          vertical:
-              isDesktop ? AppDimensions.paddingXL : AppDimensions.paddingL,
-          horizontal: AppDimensions.paddingL,
-        ),
-        child: Center(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              maxWidth:
-                  isDesktop
-                      ? AppDimensions.maxContentWidthDesktop
-                      : AppDimensions.maxContentWidthMobile,
-            ),
-            child: Column(
+    );
+  }
+
+  // ── Major Projects ────────────────────────────────────────────
+  Widget _buildMajorProjects(bool isDesktop) {
+    final projects = projectsData!['major'] ?? [];
+    return ListView.separated(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: projects.length,
+      separatorBuilder:
+          (_, __) => const SizedBox(height: AppDimensions.paddingXL),
+      itemBuilder:
+          (context, index) =>
+              _buildMajorProjectCard(projects[index], isDesktop),
+    );
+  }
+
+  Widget _buildMajorProjectCard(Project project, bool isDesktop) {
+    return Container(
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusXL),
+        border: Border.all(color: AppColors.borderColor),
+        color: AppColors.surfaceColor,
+      ),
+      child:
+          isDesktop
+              ? _buildDesktopMajorCard(project)
+              : _buildMobileMajorCard(project),
+    );
+  }
+
+  Widget _buildDesktopMajorCard(Project project) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Image side
+        if (project.imageUrl != null && project.imageUrl!.isNotEmpty)
+          SizedBox(
+            width: 420,
+            height: 320,
+            child: Stack(
+              fit: StackFit.expand,
               children: [
-                AnimatedBuilder(
-                  animation: _animationController,
-                  builder: (context, child) {
-                    return Opacity(
-                      opacity: _fadeAnimation.value,
-                      child: Transform.translate(
-                        offset: Offset(0, _slideAnimation.value),
-                        child: child,
-                      ),
-                    );
-                  },
-                  child: Column(
-                    children: [
-                      Text(
-                        "My Projects",
-                        style: TextStyle(
-                          fontSize: AppDimensions.fontSizeXXL,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.textPrimaryColor,
-                        ),
-                      ),
-                      const SizedBox(height: AppDimensions.paddingS),
-                      Container(
-                        width: 80,
-                        height: 3,
-                        decoration: BoxDecoration(
-                          color: AppColors.accentColor,
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                      ),
-                      const SizedBox(height: AppDimensions.paddingL),
-                      Text(
-                        "Here are some of my recent projects. Each represents a unique challenge and learning experience.",
-                        style: TextStyle(
-                          fontSize: AppDimensions.fontSizeM,
-                          color: AppColors.textSecondaryColor,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
+                Image.asset(
+                  project.imageUrl!,
+                  fit: BoxFit.cover,
+                  errorBuilder:
+                      (c, e, s) => Container(color: AppColors.cardBackground),
+                ),
+                Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        Colors.transparent,
+                        Colors.black.withValues(alpha: 0.3),
+                      ],
+                      begin: Alignment.centerLeft,
+                      end: Alignment.centerRight,
+                    ),
                   ),
                 ),
               ],
             ),
           ),
+        // Content side
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.all(AppDimensions.paddingXL),
+            child: _buildProjectContent(project),
+          ),
         ),
-      ),
+      ],
     );
   }
 
-  Widget _buildProjectsGrid(bool isDesktop) {
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.symmetric(
-        vertical:
-            isDesktop ? AppDimensions.paddingXXL : AppDimensions.paddingXL,
-        horizontal: AppDimensions.paddingL,
-      ),
-      child: Center(
-        child: ConstrainedBox(
-          constraints: BoxConstraints(
-            maxWidth:
-                isDesktop
-                    ? AppDimensions.maxContentWidthDesktop
-                    : AppDimensions.maxContentWidthMobile,
-          ),
-          child: AnimatedBuilder(
-            animation: _animationController,
-            builder: (context, child) {
-              return Opacity(opacity: _fadeAnimation.value, child: child);
-            },
-            child: GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: isDesktop ? 2 : 1,
-                crossAxisSpacing: AppDimensions.paddingL,
-                mainAxisSpacing: AppDimensions.paddingL,
-                childAspectRatio: isDesktop ? 1.3 : 1.1,
-              ),
-              itemCount: projectsData!.length,
-              itemBuilder: (context, index) {
-                final project = projectsData![index];
-                return _buildProjectCard(project, index);
-              },
+  Widget _buildMobileMajorCard(Project project) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Image
+        if (project.imageUrl != null && project.imageUrl!.isNotEmpty)
+          AspectRatio(
+            aspectRatio: 16 / 9,
+            child: Image.asset(
+              project.imageUrl!,
+              fit: BoxFit.cover,
+              errorBuilder:
+                  (c, e, s) => Container(color: AppColors.cardBackground),
             ),
           ),
+        Padding(
+          padding: const EdgeInsets.all(AppDimensions.paddingL),
+          child: _buildProjectContent(project),
         ),
-      ),
+      ],
     );
   }
 
-  Widget _buildProjectCard(Project project, int index) {
-    return AnimatedBuilder(
-      animation: _animationController,
-      builder: (context, child) {
-        final delay = index * 0.2;
-        final startTime = delay;
-        final endTime = startTime + 0.6;
-
-        final curvedAnimation = CurvedAnimation(
-          parent: _animationController,
-          curve: Interval(startTime, endTime, curve: Curves.easeOut),
-        );
-
-        final fadeValue = Tween<double>(
-          begin: 0.0,
-          end: 1.0,
-        ).animate(curvedAnimation);
-        final slideValue = Tween<double>(
-          begin: 50.0,
-          end: 0.0,
-        ).animate(curvedAnimation);
-
-        return Opacity(
-          opacity: fadeValue.value,
-          child: Transform.translate(
-            offset: Offset(0, slideValue.value),
-            child: child,
+  Widget _buildProjectContent(Project project) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          project.title,
+          style: GoogleFonts.spaceMono(
+            fontSize: AppDimensions.fontSizeL,
+            fontWeight: FontWeight.bold,
+            color: AppColors.textPrimaryColor,
           ),
-        );
-      },
+        ),
+        const SizedBox(height: AppDimensions.paddingM),
+        Text(
+          project.description,
+          style: GoogleFonts.inter(
+            fontSize: AppDimensions.fontSizeS,
+            color: AppColors.textSecondaryColor,
+            height: 1.6,
+          ),
+        ),
+        const SizedBox(height: AppDimensions.paddingL),
+        // Bullets
+        ...project.bullets
+            .take(3)
+            .map(
+              (bullet) => Padding(
+                padding: const EdgeInsets.only(bottom: AppDimensions.paddingS),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      margin: const EdgeInsets.only(top: 7),
+                      width: 4,
+                      height: 4,
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: AppColors.accentColor,
+                      ),
+                    ),
+                    const SizedBox(width: AppDimensions.paddingS),
+                    Expanded(
+                      child: Text(
+                        bullet,
+                        style: GoogleFonts.inter(
+                          fontSize: AppDimensions.fontSizeXS,
+                          color: AppColors.textSecondaryColor,
+                          height: 1.5,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+        const SizedBox(height: AppDimensions.paddingL),
+        // Tech stack
+        Text(
+          project.techStack,
+          style: GoogleFonts.inter(
+            fontSize: AppDimensions.fontSizeXS,
+            color: AppColors.accentColor.withValues(alpha: 0.8),
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        const SizedBox(height: AppDimensions.paddingL),
+        // Links
+        Wrap(
+          spacing: AppDimensions.paddingM,
+          runSpacing: AppDimensions.paddingS,
+          children: [
+            _buildLinkButton("GitHub", Icons.code, project.githubUrl),
+            if (project.liveUrl != null && project.liveUrl!.isNotEmpty)
+              _buildLinkButton(
+                "Live Demo",
+                Icons.open_in_new,
+                project.liveUrl!,
+              ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLinkButton(String label, IconData icon, String url) {
+    return InkWell(
+      onTap: () => _launchUrl(url, newTab: true),
+      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
       child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppDimensions.paddingM,
+          vertical: AppDimensions.paddingS,
+        ),
         decoration: BoxDecoration(
-          color: AppColors.cardBackground,
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: .08),
-              spreadRadius: 2,
-              blurRadius: 15,
-              offset: const Offset(0, 5),
+          border: Border.all(color: AppColors.borderColor),
+          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 16, color: AppColors.textSecondaryColor),
+            const SizedBox(width: AppDimensions.paddingS),
+            Text(
+              label,
+              style: GoogleFonts.inter(
+                fontSize: AppDimensions.fontSizeXS,
+                fontWeight: FontWeight.w500,
+                color: AppColors.textSecondaryColor,
+              ),
             ),
           ],
-          border: Border.all(
-            color: AppColors.primaryColor.withValues(alpha: .1),
-            width: 1,
-          ),
         ),
-        child: ClipRRect(
+      ),
+    );
+  }
+
+  // ── Learning Projects ─────────────────────────────────────────
+  Widget _buildLearningProjects(bool isDesktop) {
+    final projects = projectsData!['learning'] ?? [];
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: isDesktop ? 3 : 1,
+        crossAxisSpacing: AppDimensions.paddingL,
+        mainAxisSpacing: AppDimensions.paddingL,
+        childAspectRatio: isDesktop ? 1.4 : 2.2,
+      ),
+      itemCount: projects.length,
+      itemBuilder: (context, index) => _buildLearningCard(projects[index]),
+    );
+  }
+
+  Widget _buildLearningCard(Project project) {
+    return InkWell(
+      onTap: () => _launchUrl(project.githubUrl, newTab: true),
+      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
+      child: Container(
+        padding: const EdgeInsets.all(AppDimensions.paddingL),
+        decoration: BoxDecoration(
+          color: AppColors.surfaceColor,
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Project Image
-              Expanded(
-                flex: 5,
-                child: Container(
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        AppColors.primaryColor.withValues(alpha: .5),
-                        AppColors.accentColor.withValues(alpha: .5),
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
+          border: Border.all(color: AppColors.borderColor),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(
+                  Icons.folder_outlined,
+                  size: 20,
+                  color: AppColors.accentColor,
+                ),
+                const SizedBox(width: AppDimensions.paddingS),
+                Expanded(
+                  child: Text(
+                    project.title,
+                    style: GoogleFonts.spaceMono(
+                      fontSize: AppDimensions.fontSizeM,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textPrimaryColor,
                     ),
-                  ),
-                  child:
-                      // project.imageUrl != null
-                           Image.network(
-                            project.imageUrl,
-                            fit: BoxFit.cover,
-                            loadingBuilder: (context, child, loadingProgress) {
-                              if (loadingProgress == null) return child;
-                              return Center(
-                                child: CircularProgressIndicator(
-                                  value:
-                                      loadingProgress.expectedTotalBytes != null
-                                          ? loadingProgress
-                                                  .cumulativeBytesLoaded /
-                                              loadingProgress
-                                                  .expectedTotalBytes!
-                                          : null,
-                                  color: AppColors.textLightColor,
-                                ),
-                              );
-                            },
-                            errorBuilder: (context, error, stackTrace) {
-                              return Center(
-                                child: Icon(
-                                  Icons.code,
-                                  size: 60,
-                                  color: AppColors.textLightColor,
-                                ),
-                              );
-                            },
-                          )
-                          ,
-                ),
-              ),
-
-              // Project Info
-              Expanded(
-                flex: 6,
-                child: Padding(
-                  padding: const EdgeInsets.all(AppDimensions.paddingL),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Title
-                      Text(
-                        project.title,
-                        style: TextStyle(
-                          fontSize: AppDimensions.fontSizeL,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.textPrimaryColor,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: AppDimensions.paddingS),
-
-                      
-                        Wrap(
-                          spacing: AppDimensions.paddingXS,
-                          runSpacing: AppDimensions.paddingXS,
-                          children:
-                              (project.technologies as List<dynamic>).map((
-                                tech,
-                              ) {
-                                return Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: AppDimensions.paddingS,
-                                    vertical: 4,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.primaryColor.withValues(
-                                      alpha: .1,
-                                    ),
-                                    borderRadius: BorderRadius.circular(
-                                      AppDimensions.borderRadiusS,
-                                    ),
-                                  ),
-                                  child: Text(
-                                    tech,
-                                    style: TextStyle(
-                                      fontSize: AppDimensions.fontSizeS,
-                                      color: AppColors.primaryColor,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                );
-                              }).toList(),
-                        ),
-                      const SizedBox(height: AppDimensions.paddingS),
-
-                      // Description
-                      Expanded(
-                        child: Text(
-                          project.description,
-                          style: TextStyle(
-                            fontSize: AppDimensions.fontSizeS,
-                            color: AppColors.textSecondaryColor,
-                            height: 1.5,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 3,
-                        ),
-                      ),
-
-                      // GitHub Button
-                      
-                        ElevatedButton(
-                          onPressed: () => _launchUrl(project.githubUrl),
-                          style: ElevatedButton.styleFrom(
-                            foregroundColor: AppColors.textLightColor,
-                            backgroundColor: AppColors.primaryColor,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: AppDimensions.paddingL,
-                              vertical: AppDimensions.paddingS,
-                            ),
-                            elevation: 3,
-                            shadowColor: AppColors.primaryColor.withValues(
-                              alpha: .3,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(
-                                AppDimensions.borderRadiusM,
-                              ),
-                            ),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(Icons.open_in_new, size: 16),
-                              const SizedBox(width: AppDimensions.paddingS),
-                              Text(
-                                "Visit Project",
-                                style: TextStyle(
-                                  fontSize: AppDimensions.fontSizeS,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                    ],
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
+                const Icon(
+                  Icons.open_in_new,
+                  size: 16,
+                  color: AppColors.textMutedColor,
+                ),
+              ],
+            ),
+            const SizedBox(height: AppDimensions.paddingM),
+            Expanded(
+              child: Text(
+                project.description,
+                style: GoogleFonts.inter(
+                  fontSize: AppDimensions.fontSizeS,
+                  color: AppColors.textSecondaryColor,
+                  height: 1.5,
+                ),
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
               ),
-            ],
-          ),
+            ),
+            const SizedBox(height: AppDimensions.paddingM),
+            Text(
+              project.techStack,
+              style: GoogleFonts.inter(
+                fontSize: AppDimensions.fontSizeXS,
+                color: AppColors.accentColor.withValues(alpha: 0.7),
+                fontWeight: FontWeight.w500,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
         ),
       ),
     );

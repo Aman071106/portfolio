@@ -6,6 +6,7 @@ import 'package:portfolio_website/features/errorHandler/error_page.dart';
 import 'package:portfolio_website/features/experience/experience.dart';
 import 'package:portfolio_website/features/home/home.dart';
 import 'package:portfolio_website/features/projects/project.dart';
+import 'package:portfolio_website/features/opensource/opensource.dart';
 
 class MyAppRouter {
   static GoRouter getRouter() {
@@ -32,6 +33,11 @@ class MyAppRouter {
         GoRoute(
           path: '/projects',
           pageBuilder: (context, state) => MaterialPage(child: ProjectsPage()),
+        ),
+        GoRoute(
+          path: '/opensource',
+          pageBuilder:
+              (context, state) => MaterialPage(child: OpenSourcePage()),
         ),
       ],
       errorPageBuilder: (context, state) {

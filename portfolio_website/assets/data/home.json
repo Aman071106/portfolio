@@ -1,7 +1,7 @@
 {
   "name": "Aman Gupta",
-  "tagline": "AI/ML Engineer | Flutter App Developer | MLOps Enthusiast",
-  "intro": "I'm passionate about building scalable, intelligent systems — from beautiful cross-platform apps in Flutter to cutting-edge AI agent solutions. I thrive on solving real-world problems using Generative AI, MLOps, and agentic systems like LangChain and CrewAI.",
-  "resumeUrl": "https://drive.google.com/file/d/1Rb_vDk5yQM2nA5yDmm4SzjbBTGsRixod/view",
-  "profileImage": "https://raw.githubusercontent.com/Aman071106/IITApp/main2/ContributorImages/profilePicAman.jpg"
+  "tagline": "AI/ML & Deep Learning Engineer | Full-Stack Developer | Open Source Contributor",
+  "intro": "IIT Mandi undergrad building AI-powered systems — from multimodal wellness platforms to agentic finance trackers. National hackathon winner, Codeforces Specialist, and active open-source contributor to LangChain, Gemini CLI, and Google DeepMind Gemma.",
+  "resumeUrl": "https://drive.google.com/file/d/11aOqUmHZc86Oq5FOTHL4Knnv_MRTZrCx/view?usp=sharing",
+  "profileImage": "assets/profile.jpeg"
 }

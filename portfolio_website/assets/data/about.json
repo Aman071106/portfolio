@@ -1,11 +1,44 @@
 {
-  "cvUrl": "https://drive.google.com/file/d/1Rb_vDk5yQM2nA5yDmm4SzjbBTGsRixod/view",
+  "cvUrl": "https://drive.google.com/file/d/1n70YVRdO1T_dZ9o1qW2-7kRKGCaqxiYw/view",
   "name": "Aman Gupta",
   "displayName": "DeadlyHarbor",
-  "title": "AI/ML & MLOps Engineer | Flutter Developer | Competitive Programmer",
-  "bio": "I'm an AI/ML engineering student passionate about building scalable systems and intelligent applications. My expertise spans Generative AI, MLOps, and Flutter app development. I thrive on solving real-world problems through hackathons, agentic AI systems, and end-to-end ML pipelines. Enthusiastic about research, open-source, and pushing the boundaries of practical AI.",
-  "location": "Rajasthan, India",
+  "title": "AI/ML & Deep Learning Engineer | Full-Stack Developer | Competitive Programmer",
+  "bio": "I'm an AI/ML engineering student at IIT Mandi passionate about building scalable systems and intelligent applications. My expertise spans Generative AI, Deep Learning, MLOps, and full-stack development with Flutter and Next.js. I thrive on solving real-world problems through hackathons, agentic AI systems, and end-to-end ML pipelines. Enthusiastic about research, open-source, and pushing the boundaries of practical AI.",
+  "location": "IIT Mandi, Himachal Pradesh, India",
   "email": "aman07112006@gmail.com",
+  "phone": "+91 75977 59385",
+  "pors": [
+    "Organised KrackHack (48 HR hackathon, 800+ participants) as a member of GDG IIT Mandi",
+    "Problem setter at FCC (Fresher Coding Contest 2026) — Programming Club IIT Mandi",
+    "Web developer at Student Gymkhana IIT Mandi — Science & Technical Council (SNTC)"
+  ],
+  "achievements": [
+    {
+      "title": "iHub Multimodality Hackathon Winner",
+      "subtitle": "National level hackathon by iHub IIT Mandi",
+      "image": "assets/achievements/ihub.jpg"
+    },
+    {
+      "title": "FrostHack 2025 Winner",
+      "subtitle": "Flagship hackathon at Xpecto IIT Mandi — AI Agent Track",
+      "image": "assets/achievements/frosthack.png"
+    },
+    {
+      "title": "Hacktoberfest 2025 Supercontributor",
+      "subtitle": "Open-source contribution recognition",
+      "image": "assets/achievements/hacktober.png"
+    },
+    {
+      "title": "CC Starters 218 — Global Rank #127",
+      "subtitle": "Competitive programming achievement",
+      "image": "assets/achievements/cc_218.png"
+    },
+    {
+      "title": "Codeforces Specialist",
+      "subtitle": "Rating 1500+ on Codeforces",
+      "image": "assets/achievements/cf.png"
+    }
+  ],
   "socials": {
     "github": {
       "url": "https://github.com/Aman071106",
@@ -21,12 +54,12 @@
     },
     "codeforces": {
       "url": "https://codeforces.com/profile/AmanGuptacd",
-      "icon": "https://sta.codeforces.com/s/96988/images/codeforces-logo-with-telegram.png"
+      "icon": "https://cdn-icons-png.flaticon.com/512/993/993515.png"
     },
-    "portfolio": {
-      "url": "https://portfolio-web-7ea37.web.app/",
-      "icon": "https://cdn-icons-png.flaticon.com/512/841/841364.png"
+    "instagram": {
+      "url": "https://instagram.com/deadlyharbor",
+      "icon": "https://cdn-icons-png.flaticon.com/512/2111/2111463.png"
     }
   },
-  "profileImage": "https://raw.githubusercontent.com/Aman071106/IITApp/main2/ContributorImages/profilePicAman.jpg"
+  "profileImage": "assets/profile.jpeg"
 }

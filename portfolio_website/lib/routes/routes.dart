@@ -4,5 +4,5 @@ class MyAppRoutes {
   static const String projectRoute = 'projects';
   static const String blogRoute = 'blogs';
   static const String experience = 'experience';
-  
+  static const String opensource = 'opensource';
 }

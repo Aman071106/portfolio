@@ -1,7 +1,9 @@
 import 'dart:convert';
+import 'package:go_router/go_router.dart';
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../utils/constants/colors.dart';
 import '../../utils/constants/dimensions.dart';
 import '../../widgets/navabar.dart';
@@ -22,7 +24,6 @@ class _HomePageState extends State<HomePage>
   late Animation<double> _fadeAnimation;
   late Animation<double> _slideAnimation;
 
-  // Form controllers
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _messageController = TextEditingController();
@@ -42,7 +43,7 @@ class _HomePageState extends State<HomePage>
         curve: const Interval(0.0, 0.6, curve: Curves.easeOut),
       ),
     );
-    _slideAnimation = Tween<double>(begin: 50.0, end: 0.0).animate(
+    _slideAnimation = Tween<double>(begin: 40.0, end: 0.0).animate(
       CurvedAnimation(
         parent: _animationController,
         curve: const Interval(0.2, 0.8, curve: Curves.easeOut),
@@ -62,10 +63,8 @@ class _HomePageState extends State<HomePage>
 
   Future<void> _loadData() async {
     try {
-      // Load home.json
       final homeString = await rootBundle.loadString('assets/data/home.json');
       final homeJson = jsonDecode(homeString);
-
       setState(() {
         homeData = homeJson;
         isLoading = false;
@@ -73,16 +72,13 @@ class _HomePageState extends State<HomePage>
       _animationController.forward();
     } catch (e) {
       log('Error loading home data: $e');
-      // If home.json doesn't exist, create default data
       setState(() {
         homeData = {
           "name": "Aman Gupta",
-          "tagline": "AI/ML and Flutter App developer",
-          "intro":
-              "Building beautiful cross-platform applications with Flutter and exploring the frontiers of AI.",
+          "tagline": "AI/ML & Deep Learning Engineer",
+          "intro": "Building AI-powered systems.",
           "resumeUrl": "#",
-          "profileImage":
-              "https://raw.githubusercontent.com/Aman071106/IITApp/main2/ContributorImages/profilePicAman.jpg",
+          "profileImage": "assets/profile.jpeg",
         };
         isLoading = false;
       });
@@ -90,36 +86,28 @@ class _HomePageState extends State<HomePage>
     }
   }
 
-  Future<void> _launchUrl(String url) async {
+  Future<void> _launchUrl(String url, {bool newTab = false}) async {
     final Uri uri = Uri.parse(url);
-    if (!await launchUrl(uri)) {
+    if (!await launchUrl(uri, webOnlyWindowName: newTab ? '_blank' : '_self')) {
       throw Exception('Could not launch $url');
     }
   }
 
   Future<void> _submitContactForm() async {
     if (_formKey.currentState!.validate()) {
-      setState(() {
-        _isSubmitting = true;
-      });
-
-      // Simulate form submission
+      setState(() => _isSubmitting = true);
       await Future.delayed(const Duration(seconds: 2));
-
-      // Reset form
       _nameController.clear();
       _emailController.clear();
       _messageController.clear();
-
-      setState(() {
-        _isSubmitting = false;
-      });
-
-      // Show success message
+      setState(() => _isSubmitting = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Message sent successfully!'),
+            content: Text(
+              'Message sent successfully!',
+              style: GoogleFonts.inter(),
+            ),
             backgroundColor: AppColors.accentColor,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
@@ -138,12 +126,7 @@ class _HomePageState extends State<HomePage>
 
     return Scaffold(
       backgroundColor: AppColors.backgroundColor,
-      appBar: AppBar(
-        toolbarHeight: 0,
-        backgroundColor: AppColors.primaryColor,
-        elevation: 0,
-      ),
-      endDrawer: isDesktop ? null : NavDrawer(currentPath: '/'),
+      drawer: isDesktop ? null : NavDrawer(currentPath: '/'),
       body: Column(
         children: [
           NavBar(currentPath: '/'),
@@ -152,7 +135,8 @@ class _HomePageState extends State<HomePage>
                 isLoading
                     ? const Center(
                       child: CircularProgressIndicator(
-                        color: AppColors.primaryColor,
+                        color: AppColors.accentColor,
+                        strokeWidth: 2,
                       ),
                     )
                     : homeData == null
@@ -160,8 +144,10 @@ class _HomePageState extends State<HomePage>
                     : SingleChildScrollView(
                       child: Column(
                         children: [
-                          _buildHeroSection(isDesktop),
+                          _buildHeroSection(isDesktop, screenSize),
+                          _buildStatsBar(isDesktop),
                           _buildContactSection(isDesktop),
+                          _buildFooter(),
                         ],
                       ),
                     ),
@@ -171,24 +157,18 @@ class _HomePageState extends State<HomePage>
     );
   }
 
-  Widget _buildHeroSection(bool isDesktop) {
+  Widget _buildHeroSection(bool isDesktop, Size screenSize) {
     return Container(
       width: double.infinity,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            AppColors.primaryColor.withValues(alpha: .1),
-            AppColors.backgroundColor,
-          ],
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-        ),
+      constraints: BoxConstraints(
+        minHeight: screenSize.height - AppDimensions.navBarHeight,
       ),
+      color: AppColors.backgroundColor,
       child: Padding(
         padding: EdgeInsets.symmetric(
           vertical:
-              isDesktop ? AppDimensions.paddingXXXL : AppDimensions.paddingXXL,
-          horizontal: AppDimensions.paddingL,
+              isDesktop ? AppDimensions.paddingHero : AppDimensions.paddingXXL,
+          horizontal: AppDimensions.paddingXL,
         ),
         child: Center(
           child: ConstrainedBox(
@@ -206,373 +186,331 @@ class _HomePageState extends State<HomePage>
   }
 
   Widget _buildDesktopHero() {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        // Left content
-        Expanded(
-          flex: 3,
-          child: AnimatedBuilder(
-            animation: _animationController,
-            builder: (context, child) {
-              return Opacity(
-                opacity: _fadeAnimation.value,
-                child: Transform.translate(
-                  offset: Offset(0, _slideAnimation.value),
-                  child: child,
-                ),
-              );
-            },
+    return AnimatedBuilder(
+      animation: _animationController,
+      builder: (context, child) {
+        return Opacity(
+          opacity: _fadeAnimation.value,
+          child: Transform.translate(
+            offset: Offset(0, _slideAnimation.value),
+            child: child,
+          ),
+        );
+      },
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Expanded(
+            flex: 3,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
                   "Hello, I'm",
-                  style: TextStyle(
+                  style: GoogleFonts.inter(
                     fontSize: AppDimensions.fontSizeL,
                     color: AppColors.textSecondaryColor,
+                    fontWeight: FontWeight.w300,
                   ),
                 ),
                 const SizedBox(height: AppDimensions.paddingS),
                 Text(
                   homeData!['name'],
-                  style: TextStyle(
-                    fontSize: AppDimensions.fontSizeXXL * 1.5,
+                  style: GoogleFonts.spaceMono(
+                    fontSize: AppDimensions.fontSizeHero,
                     fontWeight: FontWeight.bold,
                     color: AppColors.textPrimaryColor,
-                    letterSpacing: 1.2,
+                    height: 1.1,
+                    letterSpacing: -2,
                   ),
                 ),
-                const SizedBox(height: AppDimensions.paddingM),
+                const SizedBox(height: AppDimensions.paddingL),
                 Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: AppDimensions.paddingL,
                     vertical: AppDimensions.paddingM,
                   ),
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [AppColors.primaryColor, AppColors.accentColor],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
+                    border: Border.all(color: AppColors.accentColor, width: 1),
                     borderRadius: BorderRadius.circular(
-                      AppDimensions.borderRadiusL,
+                      AppDimensions.borderRadiusCircular,
                     ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.primaryColor.withValues(alpha: .3),
-                        spreadRadius: 2,
-                        blurRadius: 10,
-                        offset: const Offset(0, 5),
-                      ),
-                    ],
                   ),
                   child: Text(
                     homeData!['tagline'],
-                    style: TextStyle(
-                      fontSize: AppDimensions.fontSizeL,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textLightColor,
+                    style: GoogleFonts.inter(
+                      fontSize: AppDimensions.fontSizeM,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.accentColor,
                     ),
                   ),
                 ),
                 const SizedBox(height: AppDimensions.paddingXL),
                 Text(
                   homeData!['intro'],
-                  style: TextStyle(
+                  style: GoogleFonts.inter(
                     fontSize: AppDimensions.fontSizeM,
-                    height: 1.6,
+                    height: 1.7,
                     color: AppColors.textSecondaryColor,
+                    fontWeight: FontWeight.w400,
                   ),
                 ),
                 const SizedBox(height: AppDimensions.paddingXL),
-                ElevatedButton(
-                  onPressed: () {
-                    if (homeData!['resumeUrl'] != null) {
-                      _launchUrl(homeData!['resumeUrl']);
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    foregroundColor: AppColors.textLightColor,
-                    backgroundColor: AppColors.primaryColor,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppDimensions.paddingXL,
-                      vertical: AppDimensions.paddingL,
+                Row(
+                  children: [
+                    _buildHeroButton(
+                      "Download Resume",
+                      Icons.download_rounded,
+                      true,
+                      () {
+                        if (homeData!['resumeUrl'] != null) {
+                          _launchUrl(homeData!['resumeUrl'], newTab: true);
+                        }
+                      },
                     ),
-                    elevation: 5,
-                    shadowColor: AppColors.primaryColor.withValues(alpha: .5),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(
-                        AppDimensions.borderRadiusL,
-                      ),
+                    const SizedBox(width: AppDimensions.paddingM),
+                    _buildHeroButton(
+                      "View Projects",
+                      Icons.arrow_forward_rounded,
+                      false,
+                      () => context.go('/projects'),
                     ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.download_rounded),
-                      const SizedBox(width: AppDimensions.paddingM),
-                      Text(
-                        "Download Resume",
-                        style: TextStyle(
-                          fontSize: AppDimensions.fontSizeM,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
+                  ],
                 ),
               ],
             ),
           ),
-        ),
-
-        const SizedBox(width: AppDimensions.paddingXXL),
-
-        // Right profile image
-        Expanded(
-          flex: 2,
-          child: AnimatedBuilder(
-            animation: _animationController,
-            builder: (context, child) {
-              return Opacity(
-                opacity: _fadeAnimation.value,
-                child: Transform.translate(
-                  offset: Offset(_slideAnimation.value * -1, 0),
-                  child: child,
-                ),
-              );
-            },
-            child: _buildProfileImage(400),
-          ),
-        ),
-      ],
+          const SizedBox(width: AppDimensions.paddingXXXL),
+          _buildProfileImage(300),
+        ],
+      ),
     );
   }
 
   Widget _buildMobileHero() {
-    return Column(
-      children: [
-        // Profile image
-        AnimatedBuilder(
-          animation: _animationController,
-          builder: (context, child) {
-            return Opacity(opacity: _fadeAnimation.value, child: child);
-          },
-          child: _buildProfileImage(AppDimensions.profileImageSizeMobile * 1.2),
-        ),
-        const SizedBox(height: AppDimensions.paddingXL),
+    return AnimatedBuilder(
+      animation: _animationController,
+      builder: (context, child) {
+        return Opacity(
+          opacity: _fadeAnimation.value,
+          child: Transform.translate(
+            offset: Offset(0, _slideAnimation.value),
+            child: child,
+          ),
+        );
+      },
+      child: Column(
+        children: [
+          _buildProfileImage(180),
+          const SizedBox(height: AppDimensions.paddingXL),
+          Text(
+            "Hello, I'm",
+            style: GoogleFonts.inter(
+              fontSize: AppDimensions.fontSizeM,
+              color: AppColors.textSecondaryColor,
+              fontWeight: FontWeight.w300,
+            ),
+          ),
+          const SizedBox(height: AppDimensions.paddingXS),
+          Text(
+            homeData!['name'],
+            style: GoogleFonts.spaceMono(
+              fontSize: AppDimensions.fontSizeXXL * 1.2,
+              fontWeight: FontWeight.bold,
+              color: AppColors.textPrimaryColor,
+              letterSpacing: -1,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: AppDimensions.paddingM),
+          Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppDimensions.paddingL,
+              vertical: AppDimensions.paddingS,
+            ),
+            decoration: BoxDecoration(
+              border: Border.all(color: AppColors.accentColor, width: 1),
+              borderRadius: BorderRadius.circular(
+                AppDimensions.borderRadiusCircular,
+              ),
+            ),
+            child: Text(
+              homeData!['tagline'],
+              style: GoogleFonts.inter(
+                fontSize: AppDimensions.fontSizeS,
+                fontWeight: FontWeight.w500,
+                color: AppColors.accentColor,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          const SizedBox(height: AppDimensions.paddingL),
+          Text(
+            homeData!['intro'],
+            style: GoogleFonts.inter(
+              fontSize: AppDimensions.fontSizeM,
+              height: 1.7,
+              color: AppColors.textSecondaryColor,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: AppDimensions.paddingXL),
+          _buildHeroButton("Download Resume", Icons.download_rounded, true, () {
+            if (homeData!['resumeUrl'] != null) {
+              _launchUrl(homeData!['resumeUrl'], newTab: true);
+            }
+          }),
+        ],
+      ),
+    );
+  }
 
-        // Content
-        AnimatedBuilder(
-          animation: _animationController,
-          builder: (context, child) {
-            return Opacity(
-              opacity: _fadeAnimation.value,
-              child: Transform.translate(
-                offset: Offset(0, _slideAnimation.value),
-                child: child,
-              ),
-            );
-          },
-          child: Column(
-            children: [
-              Text(
-                "Hello, I'm",
-                style: TextStyle(
-                  fontSize: AppDimensions.fontSizeM,
-                  color: AppColors.textSecondaryColor,
-                ),
-              ),
-              const SizedBox(height: AppDimensions.paddingXS),
-              Text(
-                homeData!['name'],
-                style: TextStyle(
-                  fontSize: AppDimensions.fontSizeXL * 1.2,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimaryColor,
-                  letterSpacing: 1.2,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: AppDimensions.paddingM),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppDimensions.paddingL,
-                  vertical: AppDimensions.paddingM,
-                ),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [AppColors.primaryColor, AppColors.accentColor],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(
-                    AppDimensions.borderRadiusL,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.primaryColor.withValues(alpha: .3),
-                      spreadRadius: 2,
-                      blurRadius: 10,
-                      offset: const Offset(0, 5),
-                    ),
-                  ],
-                ),
-                child: Text(
-                  homeData!['tagline'],
-                  style: TextStyle(
-                    fontSize: AppDimensions.fontSizeM,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textLightColor,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-              const SizedBox(height: AppDimensions.paddingL),
-              Text(
-                homeData!['intro'],
-                style: TextStyle(
-                  fontSize: AppDimensions.fontSizeM,
-                  height: 1.6,
-                  color: AppColors.textSecondaryColor,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: AppDimensions.paddingXL),
-              ElevatedButton(
-                onPressed: () {
-                  if (homeData!['resumeUrl'] != null) {
-                    _launchUrl(homeData!['resumeUrl']);
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  foregroundColor: AppColors.textLightColor,
-                  backgroundColor: AppColors.primaryColor,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppDimensions.paddingXL,
-                    vertical: AppDimensions.paddingM,
-                  ),
-                  elevation: 5,
-                  shadowColor: AppColors.primaryColor.withValues(alpha: .5),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(
-                      AppDimensions.borderRadiusL,
-                    ),
-                  ),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.download_rounded),
-                    const SizedBox(width: AppDimensions.paddingM),
-                    Text(
-                      "Download Resume",
-                      style: TextStyle(
-                        fontSize: AppDimensions.fontSizeM,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+  Widget _buildHeroButton(
+    String label,
+    IconData icon,
+    bool filled,
+    VoidCallback onTap,
+  ) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusCircular),
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppDimensions.paddingXL,
+          vertical: AppDimensions.paddingM,
+        ),
+        decoration: BoxDecoration(
+          color: filled ? AppColors.accentColor : Colors.transparent,
+          border: Border.all(
+            color: filled ? AppColors.accentColor : AppColors.borderColor,
+            width: 1.5,
+          ),
+          borderRadius: BorderRadius.circular(
+            AppDimensions.borderRadiusCircular,
           ),
         ),
-      ],
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: 18,
+              color:
+                  filled
+                      ? AppColors.backgroundColor
+                      : AppColors.textSecondaryColor,
+            ),
+            const SizedBox(width: AppDimensions.paddingS),
+            Text(
+              label,
+              style: GoogleFonts.inter(
+                fontSize: AppDimensions.fontSizeS,
+                fontWeight: FontWeight.w600,
+                color:
+                    filled
+                        ? AppColors.backgroundColor
+                        : AppColors.textSecondaryColor,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
   Widget _buildProfileImage(double size) {
-    return Container(
+    return SizedBox(
       width: size,
       height: size,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        gradient: const LinearGradient(
-          colors: [AppColors.primaryColor, AppColors.textLightColor],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primaryColor.withValues(alpha: .4),
-            spreadRadius: 5,
-            blurRadius: 15,
-            offset: const Offset(0, 5),
+      child: Container(
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: AppColors.accentColor.withValues(alpha: 0.3),
+            width: 2,
           ),
-        ],
+        ),
+        child: ClipOval(
+          child: Image.asset(
+            homeData!['profileImage'] ?? 'assets/profile.jpeg',
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) {
+              return Container(
+                color: AppColors.surfaceColor,
+                child: Center(
+                  child: Icon(
+                    Icons.person,
+                    size: size * 0.4,
+                    color: AppColors.textSecondaryColor,
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(4.0),
-        child: Hero(
-          tag: 'profile-image',
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              ClipOval(
-                child: Container(
-                  width: size,
-                  height: size,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        Colors.blue.shade800.withValues(alpha: 0.6),
-                        Colors.blue.shade200.withValues(alpha: 0.6),
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                  ),
-                  child: Image.network(
-                    "https://raw.githubusercontent.com/Aman071106/IITApp/main2/ContributorImages/profilePicAman.jpg",
-                    fit: BoxFit.cover,
-                    width: size,
-                    height: size,
-                    loadingBuilder: (context, child, loadingProgress) {
-                      if (loadingProgress == null) return child;
-                      return Center(
-                        child: CircularProgressIndicator(
-                          value:
-                              loadingProgress.expectedTotalBytes != null
-                                  ? loadingProgress.cumulativeBytesLoaded /
-                                      loadingProgress.expectedTotalBytes!
-                                  : null,
-                          color: AppColors.textLightColor,
+    );
+  }
+
+  Widget _buildStatsBar(bool isDesktop) {
+    final stats = [
+      {'value': '4', 'label': 'OSS Orgs'},
+      {'value': '14+', 'label': 'Merged PRs'},
+      {'value': '2', 'label': 'Hackathon Wins'},
+      {'value': '1500+', 'label': 'CF Rating'},
+    ];
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: AppDimensions.paddingXL),
+      decoration: BoxDecoration(
+        border: Border(
+          top: BorderSide(color: AppColors.borderColor, width: 1),
+          bottom: BorderSide(color: AppColors.borderColor, width: 1),
+        ),
+      ),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth:
+                isDesktop
+                    ? AppDimensions.maxContentWidthDesktop
+                    : AppDimensions.maxContentWidthMobile,
+          ),
+          child: Wrap(
+            alignment: WrapAlignment.center,
+            spacing:
+                isDesktop ? AppDimensions.paddingXXXL : AppDimensions.paddingXL,
+            runSpacing: AppDimensions.paddingL,
+            children:
+                stats.map((stat) {
+                  return Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        stat['value']!,
+                        style: GoogleFonts.spaceMono(
+                          fontSize:
+                              isDesktop
+                                  ? AppDimensions.fontSizeXXL
+                                  : AppDimensions.fontSizeXL,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.accentColor,
                         ),
-                      );
-                    },
-                    errorBuilder: (context, error, stackTrace) {
-                      return Center(
-                        child: Icon(
-                          Icons.person,
-                          size: size * 0.5,
-                          color: AppColors.textLightColor,
+                      ),
+                      const SizedBox(height: AppDimensions.paddingXS),
+                      Text(
+                        stat['label']!,
+                        style: GoogleFonts.inter(
+                          fontSize: AppDimensions.fontSizeS,
+                          color: AppColors.textSecondaryColor,
+                          fontWeight: FontWeight.w400,
                         ),
-                      );
-                    },
-                  ),
-                ),
-              ),
-              // Optional: Soft transparent circle on top for effect
-              ClipOval(
-                child: Container(
-                  width: size,
-                  height: size,
-                  decoration: BoxDecoration(
-                    gradient: RadialGradient(
-                      colors: [
-                        Colors.transparent,
-                        Colors.blue.withValues(alpha: 0.1),
-                      ],
-                      center: Alignment.center,
-                      radius: 0.8,
-                    ),
-                  ),
-                ),
-              ),
-            ],
+                      ),
+                    ],
+                  );
+                }).toList(),
           ),
         ),
       ),
@@ -582,87 +520,50 @@ class _HomePageState extends State<HomePage>
   Widget _buildContactSection(bool isDesktop) {
     return Container(
       width: double.infinity,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            AppColors.backgroundColor,
-            AppColors.primaryColor.withValues(alpha: .05),
-          ],
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-        ),
+      padding: EdgeInsets.symmetric(
+        vertical:
+            isDesktop ? AppDimensions.paddingXXXL : AppDimensions.paddingXXL,
+        horizontal: AppDimensions.paddingXL,
       ),
-      child: Padding(
-        padding: EdgeInsets.symmetric(
-          vertical:
-              isDesktop ? AppDimensions.paddingXXXL : AppDimensions.paddingXXL,
-          horizontal: AppDimensions.paddingL,
-        ),
-        child: Center(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              maxWidth:
-                  isDesktop
-                      ? AppDimensions.maxContentWidthDesktop
-                      : AppDimensions.maxContentWidthMobile,
-            ),
-            child: Column(
-              children: [
-                // Section Title
-                Text(
-                  "Get In Touch",
-                  style: TextStyle(
-                    fontSize: AppDimensions.fontSizeXXL,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimaryColor,
-                  ),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: isDesktop ? 700 : AppDimensions.maxContentWidthMobile,
+          ),
+          child: Column(
+            children: [
+              Text(
+                "Get In Touch",
+                style: GoogleFonts.spaceMono(
+                  fontSize: AppDimensions.fontSizeXXL,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimaryColor,
                 ),
-                const SizedBox(height: AppDimensions.paddingS),
-                Container(
-                  width: 80,
-                  height: 3,
-                  decoration: BoxDecoration(
-                    color: AppColors.accentColor,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
+              ),
+              const SizedBox(height: AppDimensions.paddingS),
+              Container(width: 60, height: 2, color: AppColors.accentColor),
+              const SizedBox(height: AppDimensions.paddingL),
+              Text(
+                "Have a question or want to work together?",
+                style: GoogleFonts.inter(
+                  fontSize: AppDimensions.fontSizeM,
+                  color: AppColors.textSecondaryColor,
                 ),
-                const SizedBox(height: AppDimensions.paddingL),
-                Text(
-                  "Have a question or want to work together? Drop me a message!",
-                  style: TextStyle(
-                    fontSize: AppDimensions.fontSizeM,
-                    color: AppColors.textSecondaryColor,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: AppDimensions.paddingXXL),
+              Container(
+                padding: const EdgeInsets.all(AppDimensions.paddingXL),
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceColor,
+                  borderRadius: BorderRadius.circular(
+                    AppDimensions.borderRadiusL,
                   ),
-                  textAlign: TextAlign.center,
+                  border: Border.all(color: AppColors.borderColor, width: 1),
                 ),
-                const SizedBox(height: AppDimensions.paddingXXL),
-
-                // Contact Form
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(AppDimensions.paddingXL),
-                  decoration: BoxDecoration(
-                    color: AppColors.cardBackground,
-                    borderRadius: BorderRadius.circular(
-                      AppDimensions.borderRadiusL,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: .08),
-                        spreadRadius: 2,
-                        blurRadius: 15,
-                        offset: const Offset(0, 5),
-                      ),
-                    ],
-                    border: Border.all(
-                      color: AppColors.primaryColor.withValues(alpha: .1),
-                      width: 1,
-                    ),
-                  ),
-                  child: _buildContactForm(),
-                ),
-              ],
-            ),
+                child: _buildContactForm(),
+              ),
+            ],
           ),
         ),
       ),
@@ -675,11 +576,11 @@ class _HomePageState extends State<HomePage>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Name Field
           _buildInputLabel("Name"),
           const SizedBox(height: AppDimensions.paddingXS),
           TextFormField(
             controller: _nameController,
+            style: GoogleFonts.inter(color: AppColors.textPrimaryColor),
             decoration: _inputDecoration(
               "Enter your name",
               Icons.person_outline,
@@ -692,12 +593,11 @@ class _HomePageState extends State<HomePage>
             },
           ),
           const SizedBox(height: AppDimensions.paddingL),
-
-          // Email Field
           _buildInputLabel("Email"),
           const SizedBox(height: AppDimensions.paddingXS),
           TextFormField(
             controller: _emailController,
+            style: GoogleFonts.inter(color: AppColors.textPrimaryColor),
             decoration: _inputDecoration(
               "Enter your email",
               Icons.email_outlined,
@@ -716,14 +616,13 @@ class _HomePageState extends State<HomePage>
             },
           ),
           const SizedBox(height: AppDimensions.paddingL),
-
-          // Message Field
           _buildInputLabel("Message"),
           const SizedBox(height: AppDimensions.paddingXS),
           TextFormField(
             controller: _messageController,
+            style: GoogleFonts.inter(color: AppColors.textPrimaryColor),
             decoration: _inputDecoration(
-              "Write your message here...",
+              "Write your message...",
               Icons.message_outlined,
             ),
             maxLines: 5,
@@ -735,29 +634,21 @@ class _HomePageState extends State<HomePage>
             },
           ),
           const SizedBox(height: AppDimensions.paddingXL),
-
-          // Submit Button
           Center(
-            child: SizedBox(
-              width: 200,
-              height: 50,
-              child: ElevatedButton(
-                onPressed: _isSubmitting ? null : _submitContactForm,
-                style: ElevatedButton.styleFrom(
-                  foregroundColor: AppColors.textLightColor,
-                  backgroundColor: AppColors.accentColor,
-                  disabledForegroundColor: AppColors.textLightColor.withValues(
-                    alpha: 0.6,
-                  ),
-                  disabledBackgroundColor: AppColors.accentColor.withValues(
-                    alpha: 0.6,
-                  ),
-                  elevation: 5,
-                  shadowColor: AppColors.accentColor.withValues(alpha: .5),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(
-                      AppDimensions.borderRadiusL,
-                    ),
+            child: InkWell(
+              onTap: _isSubmitting ? null : _submitContactForm,
+              borderRadius: BorderRadius.circular(
+                AppDimensions.borderRadiusCircular,
+              ),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppDimensions.paddingXXL,
+                  vertical: AppDimensions.paddingM,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.accentColor,
+                  borderRadius: BorderRadius.circular(
+                    AppDimensions.borderRadiusCircular,
                   ),
                 ),
                 child:
@@ -766,20 +657,25 @@ class _HomePageState extends State<HomePage>
                           height: 20,
                           width: 20,
                           child: CircularProgressIndicator(
-                            color: AppColors.textLightColor,
+                            color: AppColors.backgroundColor,
                             strokeWidth: 2,
                           ),
                         )
                         : Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.send_rounded),
-                            const SizedBox(width: AppDimensions.paddingM),
+                            const Icon(
+                              Icons.send_rounded,
+                              size: 18,
+                              color: AppColors.backgroundColor,
+                            ),
+                            const SizedBox(width: AppDimensions.paddingS),
                             Text(
                               "Send Message",
-                              style: TextStyle(
+                              style: GoogleFonts.inter(
                                 fontSize: AppDimensions.fontSizeM,
                                 fontWeight: FontWeight.w600,
+                                color: AppColors.backgroundColor,
                               ),
                             ),
                           ],
@@ -795,10 +691,11 @@ class _HomePageState extends State<HomePage>
   Widget _buildInputLabel(String label) {
     return Text(
       label,
-      style: TextStyle(
-        fontSize: AppDimensions.fontSizeM,
+      style: GoogleFonts.inter(
+        fontSize: AppDimensions.fontSizeS,
         fontWeight: FontWeight.w600,
-        color: AppColors.textPrimaryColor,
+        color: AppColors.textSecondaryColor,
+        letterSpacing: 0.5,
       ),
     );
   }
@@ -806,39 +703,48 @@ class _HomePageState extends State<HomePage>
   InputDecoration _inputDecoration(String hint, IconData icon) {
     return InputDecoration(
       hintText: hint,
-      prefixIcon: Icon(icon, color: AppColors.primaryColor),
-      filled: true,
-      fillColor: AppColors.backgroundColor,
-      contentPadding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.paddingL,
-        vertical: AppDimensions.paddingM,
+      hintStyle: GoogleFonts.inter(
+        color: AppColors.textMutedColor,
+        fontSize: AppDimensions.fontSizeM,
       ),
+      prefixIcon: Icon(icon, color: AppColors.textMutedColor, size: 20),
+      filled: true,
+      fillColor: AppColors.cardBackground,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-        borderSide: BorderSide.none,
+        borderSide: BorderSide(color: AppColors.borderColor),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-        borderSide: BorderSide(
-          color: AppColors.primaryColor.withValues(alpha: .1),
-          width: 1,
-        ),
+        borderSide: BorderSide(color: AppColors.borderColor),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-        borderSide: BorderSide(color: AppColors.primaryColor, width: 2),
+        borderSide: BorderSide(color: AppColors.accentColor, width: 1.5),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-        borderSide: const BorderSide(color: Colors.red, width: 1),
+        borderSide: const BorderSide(color: Colors.redAccent),
       ),
-      focusedErrorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-        borderSide: const BorderSide(color: Colors.red, width: 2),
+    );
+  }
+
+  Widget _buildFooter() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: AppDimensions.paddingXL),
+      decoration: BoxDecoration(
+        border: Border(top: BorderSide(color: AppColors.borderColor, width: 1)),
+      ),
+      child: Center(
+        child: Text(
+          "© 2025 Aman Gupta. Built with Flutter.",
+          style: GoogleFonts.inter(
+            fontSize: AppDimensions.fontSizeS,
+            color: AppColors.textMutedColor,
+          ),
+        ),
       ),
     );
   }
 }
-
-
-// Send message button implementation

@@ -1,23 +1,22 @@
-// import 'dart:developer'; // Add this for `print()`
-
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'dart:convert';
+import 'package:flutter/services.dart';
 import 'package:portfolio_website/features/projects/project_model.dart';
 
 class ProjectService {
-  final _db = FirebaseFirestore.instance;
+  Future<Map<String, List<Project>>> fetchProjects() async {
+    final jsonString = await rootBundle.loadString('assets/data/projects.json');
+    final data = jsonDecode(jsonString) as Map<String, dynamic>;
 
-  Future<List<Project>> fetchProjects() async {
-    final snapshot = await _db.collection('projects').get();
+    final majorList =
+        (data['major'] as List<dynamic>)
+            .map((item) => Project.fromMap(item))
+            .toList();
 
+    final learningList =
+        (data['learning'] as List<dynamic>)
+            .map((item) => Project.fromMap(item))
+            .toList();
 
-    // Map and print Project objects
-    final projects =
-        snapshot.docs.map((doc) {
-          final project = Project.fromMap(doc.data());
-          // print('✅ Project mapped: $project');
-          return project;
-        }).toList();
-
-    return projects;
+    return {'major': majorList, 'learning': learningList};
   }
 }

@@ -1,20 +1,21 @@
 class MyAppStrings {
-  //error page
+  // Error page
   static const String errorString = "Error-404 not found";
 
   // App General
-  static const String appName = "DeadlyHarbor's Portfolio";
+  static const String appName = "Aman Gupta";
 
   // Navigation
   static const String homeNavLabel = "Home";
   static const String aboutNavLabel = "About";
   static const String projectsNavLabel = "Projects";
-  static const String blogNavLabel = "Blogs";
   static const String experienceNavLabel = "Experience";
+  static const String opensourceNavLabel = "Open Source";
+  static const String blogNavLabel = "Blogs";
 
   // About Page
   static const String aboutTitle = "About Me";
-  static const String skillsTitle = "My Skills";
+  static const String skillsTitle = "Skills & Tools";
   static const String contactTitle = "Get In Touch";
   static const String locationLabel = "Location";
   static const String emailLabel = "Email";

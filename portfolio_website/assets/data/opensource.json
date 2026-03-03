@@ -1,0 +1,155 @@
+{
+    "summary": {
+        "totalMergedPRs": 14,
+        "totalOrgs": 4,
+        "highlight": "Active open-source contributor to top-tier projects including LangChain, ApiDash, and IIT Mandi's Institute App."
+    },
+    "organizations": [
+        {
+            "name": "ApiDash",
+            "repoUrl": "https://github.com/foss42/apidash",
+            "logoUrl": "assets/oss/apidash.png",
+            "mergedCount": 6,
+            "contributions": [
+                {
+                    "type": "pr",
+                    "url": "https://github.com/foss42/apidash/pull/997",
+                    "description": "Improved documentation by adding a warning for temporary .pub-cache modifications related to Dart's .toJS() deprecation.",
+                    "status": "merged"
+                },
+                {
+                    "type": "pr",
+                    "url": "https://github.com/foss42/apidash/pull/991",
+                    "description": "Fixed 'tofu' (missing glyph) rendering bug in Flutter desktop builds by updating typography token configuration with OS-specific emoji font fallbacks.",
+                    "status": "merged"
+                },
+                {
+                    "type": "pr",
+                    "url": "https://github.com/foss42/apidash/pull/990",
+                    "description": "Resolved critical Windows desktop startup crash caused by Flutter's transition from AssetManifest.json to AssetManifest.bin.",
+                    "status": "merged"
+                },
+                {
+                    "type": "pr",
+                    "url": "https://github.com/foss42/apidash/pull/989",
+                    "description": "Implemented a proper empty-state UI for the History tab, replacing a misleading blank screen with a themed placeholder.",
+                    "status": "merged"
+                },
+                {
+                    "type": "pr",
+                    "url": "https://github.com/foss42/apidash/pull/986",
+                    "description": "Resolved a critical RIGHT OVERFLOWED layout issue in the Logs pane by redesigning the toolbar with responsive Expanded layout logic.",
+                    "status": "merged"
+                },
+                {
+                    "type": "pr",
+                    "url": "https://github.com/foss42/apidash/pull/877",
+                    "description": "Resolved SDK constraint mismatch by aligning better_networking dependency requirements with Dart ≥3.8.0.",
+                    "status": "merged"
+                }
+            ]
+        },
+        {
+            "name": "Institute App (IIT Mandi)",
+            "repoUrl": "https://github.com/KamandPrompt/InstituteApp",
+            "logoUrl": "assets/oss/insti_app.png",
+            "mergedCount": 5,
+            "contributions": [
+                {
+                    "type": "pr",
+                    "url": "https://github.com/KamandPrompt/InstituteApp/commit/facdfae067bd42cb69870ba36dd618b739f2de05",
+                    "description": "Designed and implemented a dynamic Feeds module and About page, enhancing platform content visibility.",
+                    "status": "merged"
+                },
+                {
+                    "type": "pr",
+                    "url": "https://github.com/KamandPrompt/InstituteApp/commit/6728c82d1338f0e39f7133f8f4e8993c492cc023",
+                    "description": "Refactored feed schema to support nullable host configuration, improving data flexibility.",
+                    "status": "merged"
+                },
+                {
+                    "type": "pr",
+                    "url": "https://github.com/KamandPrompt/InstituteApp/commit/70adf4cdef272c7b9b29926b1fb07eb02a451b7e",
+                    "description": "Implemented automated dashboard image updates from shared resources.",
+                    "status": "merged"
+                },
+                {
+                    "type": "pr",
+                    "url": "https://github.com/KamandPrompt/InstituteApp/commit/79958005af900a994a86b3657c62bbcd8a241f24",
+                    "description": "Led UI enhancements and branding updates including full application rename.",
+                    "status": "merged"
+                },
+                {
+                    "type": "pr",
+                    "url": "https://github.com/KamandPrompt/InstituteApp/commit/2ee189267f1a597c31495a8c149866c889b0b1e8",
+                    "description": "Structural navigation improvements and additional UI fixes.",
+                    "status": "merged"
+                }
+            ]
+        },
+        {
+            "name": "LangChain",
+            "repoUrl": "https://github.com/langchain-ai/langchain",
+            "logoUrl": "assets/oss/langchain.png",
+            "mergedCount": 2,
+            "contributions": [
+                {
+                    "type": "pr",
+                    "url": "https://github.com/langchain-ai/langchain/pull/34550",
+                    "description": "Improved developer ergonomics by clarifying docstrings for HTML link extraction utilities.",
+                    "status": "merged"
+                },
+                {
+                    "type": "pr",
+                    "url": "https://github.com/langchain-ai/langchain/pull/34552",
+                    "description": "Enhanced HTML link extraction by expanding ignored binary file suffixes (.pdf, .docx, .xlsx, .pptx, .webp, etc.).",
+                    "status": "merged"
+                }
+            ]
+        },
+        {
+            "name": "JobMiner (Hacktoberfest)",
+            "repoUrl": "https://github.com/beingvirus/JobMiner",
+            "logoUrl": "",
+            "mergedCount": 6,
+            "contributions": [
+                {
+                    "type": "pr",
+                    "url": "https://github.com/beingvirus/JobMiner/pull/4",
+                    "description": "Contributed to the web scraping toolkit for job listing extraction.",
+                    "status": "merged"
+                },
+                {
+                    "type": "pr",
+                    "url": "https://github.com/beingvirus/JobMiner/pull/41",
+                    "description": "Enhanced scraping capabilities and data organization features.",
+                    "status": "merged"
+                },
+                {
+                    "type": "pr",
+                    "url": "https://github.com/beingvirus/JobMiner/pull/34",
+                    "description": "Improved structured data extraction from multiple websites.",
+                    "status": "merged"
+                },
+                {
+                    "type": "pr",
+                    "url": "https://github.com/beingvirus/JobMiner/pull/31",
+                    "description": "Added modular scraping pipeline enhancements.",
+                    "status": "merged"
+                },
+                {
+                    "type": "pr",
+                    "url": "https://github.com/beingvirus/JobMiner/pull/13",
+                    "description": "Contributed extensibility improvements to the scraping foundation.",
+                    "status": "merged"
+                },
+                {
+                    "type": "pr",
+                    "url": "https://github.com/beingvirus/JobMiner/pull/12",
+                    "description": "Job market analysis and automated job searching improvements.",
+                    "status": "merged"
+                }
+            ]
+        }
+    ]
+}
