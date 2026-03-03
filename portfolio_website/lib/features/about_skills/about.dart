@@ -311,6 +311,30 @@ class _AboutPageState extends State<AboutPage>
     );
   }
 
+  Widget _buildSocialIcon(String iconPath) {
+    const fallback = Icon(
+      Icons.link,
+      size: 20,
+      color: AppColors.textSecondaryColor,
+    );
+    if (iconPath.isEmpty) return fallback;
+
+    if (iconPath.startsWith('assets/')) {
+      return Image.asset(
+        iconPath,
+        width: 20,
+        height: 20,
+        errorBuilder: (c, e, s) => fallback,
+      );
+    }
+    return Image.network(
+      iconPath,
+      width: 20,
+      height: 20,
+      errorBuilder: (c, e, s) => fallback,
+    );
+  }
+
   Widget _buildSocialLinks() {
     final socials = aboutData!['socials'] as Map<String, dynamic>? ?? {};
     return Wrap(
@@ -340,17 +364,7 @@ class _AboutPageState extends State<AboutPage>
                       borderRadius: BorderRadius.circular(
                         AppDimensions.borderRadiusS,
                       ),
-                      child: Image.network(
-                        social['icon'] ?? '',
-                        width: 20,
-                        height: 20,
-                        errorBuilder:
-                            (c, e, s) => const Icon(
-                              Icons.link,
-                              size: 20,
-                              color: AppColors.textSecondaryColor,
-                            ),
-                      ),
+                      child: _buildSocialIcon(social['icon'] ?? ''),
                     ),
                     const SizedBox(width: AppDimensions.paddingS),
                     Text(
