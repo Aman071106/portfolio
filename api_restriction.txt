@@ -1,0 +1,5 @@
+only 
+1.https://portfolio-web-7ea37.web.app/
+2. localhost:8080 
+
+are allowed to send requests

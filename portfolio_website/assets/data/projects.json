@@ -17,6 +17,39 @@
             "category": "major"
         },
         {
+  "title": "BiDir-IDD — Physics-Constrained Explainable Deepfake Detection",
+  "description": "Research-driven deepfake detection framework combining physics-informed forensic priors, bidirectional divergence supervision, and explainable representation learning for robust cross-domain AI-generated image forensics. GitHub repository and live demo coming soon.",
+  "techStack": "Python | PyTorch | OpenCV | timm | HuggingFace | scikit-learn | UMAP | Computer Vision | Explainable AI",
+  "bullets": [
+    "🥈 2nd Overall on the AIGI Detection Benchmark with the best open-source score, outperforming existing OSS SOTA baselines",
+    "Bidirectional Jensen–Shannon Divergence supervision for asymmetric organization of real/fake evidence manifolds",
+    "Physics-informed forensic priors using depth, albedo, normals, roughness, metallicity, and frequency-domain inconsistencies",
+    "Evidence-aligned XAI via cross-attention and MBT spectral alignment instead of post-hoc saliency methods",
+    "Latent geometry restructuring analyzed through Fisher Ratio, SVM Margin, Covariance Trace, Silhouette Score, and UMAP transport visualization"
+  ],
+  "githubUrl": null,
+  "liveUrl": null,
+  "imageUrl": "assets/project_images/10_proj.png",
+  "category": "major"
+},
+{
+  "title": "Multi-Agent Swarm Sorting System",
+  "description": "ROS2 + Gazebo based autonomous warehouse swarm system where three collaborative robots explore, detect, pick, and sort color-coded objects using reinforcement learning, computer vision, and decentralized multi-agent coordination. GitHub and live demo coming soon.",
+  "techStack": "Python | ROS2 | Gazebo | OpenCV | Stable-Baselines3 | PPO | Reinforcement Learning | Multi-Agent Systems | Computer Vision",
+  "bullets": [
+    "Built a fully autonomous 3-robot warehouse swarm system with decentralized communication using shared ROS2 topic coordination",
+    "Integrated PPO-based navigation with classical control overrides for collision avoidance, exploration, and target alignment",
+    "Designed RGB-D vision pipeline for real-time object/bin detection using HSV segmentation, depth estimation, and spatial localization",
+    "Implemented collaborative exploration, object discovery broadcasting, shared-map navigation, and coordinated pick/place execution",
+    "Developed RViz visualization, trajectory logging, and automated PDF analytics reports for swarm behavior and task distribution"
+  ],
+  "githubUrl": "https://github.com/Aman071106/cs671_2026_hack",
+  "liveUrl": null,
+  "imageUrl": "assets/project_images/11_proj.gif",
+  "category": "major"
+},
+         
+        {
             "title": "Milo Mate — AI Customer Service Assistant",
             "description": "Privacy-first AI customer support browser extension leveraging Gemini Nano on-device inference for real-time multilingual communication, summarization, transcription, and content understanding.",
             "techStack": "Chrome Extension | Gemini Nano | RAG | FAISS | IndexedDB | Web APIs | Deepgram | Multimodal AI",
